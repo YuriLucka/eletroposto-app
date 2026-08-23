@@ -163,7 +163,19 @@ html, body {
     70%  { box-shadow: 0 0 0 6px rgba(47,184,110,0); }
     100% { box-shadow: 0 0 0 0 rgba(47,184,110,0); }
 }
-.admin-role-chip { font-weight: 600 !important; letter-spacing: .2px; }
+.admin-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.16);
+    color: #fff;
+    font-weight: 600;
+    font-size: .8125rem;
+    letter-spacing: .2px;
+    white-space: nowrap;
+}
 
 .kpi-card {
     border-left: 4px solid var(--mud-palette-primary, #0B5FFF);

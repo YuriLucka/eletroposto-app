@@ -18,7 +18,10 @@
             <MudText Typo="Typo.caption" Style="opacity:.85;">@_agora.ToString("dd/MM/yyyy")</MudText>
         </div>
         <MudTooltip Text="Nível de acesso: Proprietário (acesso total)">
-            <MudChip T="string" Color="Color.Inherit" Size="Size.Small" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.VerifiedUser" Class="admin-role-chip mr-1">Proprietário</MudChip>
+            <div class="admin-role-badge mr-1">
+                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Size="Size.Small" />
+                <span>Proprietário</span>
+            </div>
         </MudTooltip>
         <MudTooltip Text="Ir para o app do cliente">
             <MudIconButton Icon="@Icons.Material.Filled.PhoneIphone" Color="Color.Inherit" Href="" />
