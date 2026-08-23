@@ -53,3 +53,20 @@ public class Plano
     public decimal Mensalidade { get; set; }
     public List<string> Beneficios { get; set; } = new();
 }
+
+public class AcessoPortao
+{
+    public string Id { get; set; } = "";
+    public DateTime DataHora { get; set; }
+    public string UsuarioNome { get; set; } = "";
+    public string Portao { get; set; } = "";
+    public string Motivo { get; set; } = "";
+}
+
+public class FaturamentoDia
+{
+    public DateTime Data { get; set; }
+    public decimal Faturamento { get; set; }
+    public double KwhVendidos { get; set; }
+    public int Sessoes { get; set; }
+}

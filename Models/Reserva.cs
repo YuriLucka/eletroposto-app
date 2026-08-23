@@ -3,6 +3,7 @@ namespace ev_charge_prototype.Models;
 public class Reserva
 {
     public string Id { get; set; } = "";
+    public string ClienteNome { get; set; } = "";
     public string CarregadorId { get; set; } = "";
     public string EstacaoNome { get; set; } = "";
     public string CarregadorCodigo { get; set; } = "";

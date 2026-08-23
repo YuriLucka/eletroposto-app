@@ -11,6 +11,9 @@ public class MockDataStore
     public List<Transacao> Transacoes { get; }
     public List<Notificacao> Notificacoes { get; }
     public List<Plano> Planos { get; }
+    public List<Usuario> UsuariosAdmin { get; }
+    public List<AcessoPortao> AcessosPortao { get; }
+    public List<FaturamentoDia> FaturamentoUltimos7Dias { get; }
 
     public MockDataStore()
     {
@@ -72,9 +75,15 @@ public class MockDataStore
 
         Reservas = new List<Reserva>
         {
-            new() { Id = "r1", CarregadorId = "c3", EstacaoNome = "Eletroposto Biguaçu", CarregadorCodigo = "BIGUACU-AC-001",
-                    DataHora = DateTime.Today.AddHours(18), DuracaoMinutos = 30, Status = StatusReserva.Confirmada,
-                    CodigoQr = "RSV-8F2A91" }
+            new() { Id = "r1", ClienteNome = UsuarioAtual.Nome, CarregadorId = "c3", EstacaoNome = "Eletroposto Biguaçu",
+                    CarregadorCodigo = "BIGUACU-AC-001", DataHora = DateTime.Today.AddHours(18), DuracaoMinutos = 30,
+                    Status = StatusReserva.Confirmada, CodigoQr = "RSV-8F2A91" },
+            new() { Id = "r2", ClienteNome = "Marina Souza", CarregadorId = "c1", EstacaoNome = "Eletroposto Biguaçu",
+                    CarregadorCodigo = "BIGUACU-DC-001", DataHora = DateTime.Today.AddHours(20), DuracaoMinutos = 45,
+                    Status = StatusReserva.Confirmada, CodigoQr = "RSV-3C7B12" },
+            new() { Id = "r3", ClienteNome = "Pedro Alves", CarregadorId = "c1", EstacaoNome = "Eletroposto Biguaçu",
+                    CarregadorCodigo = "BIGUACU-DC-001", DataHora = DateTime.Today.AddDays(-1).AddHours(17), DuracaoMinutos = 30,
+                    Status = StatusReserva.NoShow, CodigoQr = "RSV-1A9D44" },
         };
 
         Transacoes = new List<Transacao>
@@ -107,5 +116,28 @@ public class MockDataStore
             new() { Id = "p2", Nome = "Plano Empresarial (em breve)", Mensalidade = 0,
                     Beneficios = new() { "Faturamento centralizado para frotas", "Múltiplos veículos", "Relatórios de consumo" } },
         };
+
+        UsuariosAdmin = new List<Usuario>
+        {
+            new() { Id = "a1", Nome = "Yuri Rodrigues", Email = "yrodrigues@dpinet.com.br", NivelAdmin = NivelAcesso.Proprietario },
+            new() { Id = "a2", Nome = "João Operador", Email = "joao.operador@eletroposto.com", NivelAdmin = NivelAcesso.Operador },
+            new() { Id = "a3", Nome = "Ana Financeiro", Email = "ana.financeiro@eletroposto.com", NivelAdmin = NivelAcesso.Financeiro },
+            new() { Id = "a4", Nome = "Bruno Técnico", Email = "bruno.tecnico@eletroposto.com", NivelAdmin = NivelAcesso.Tecnico },
+        };
+
+        AcessosPortao = new List<AcessoPortao>
+        {
+            new() { Id = "ap1", DataHora = DateTime.Now.AddHours(-2), UsuarioNome = "Carlos M.", Portao = "Entrada", Motivo = "Recarga agendada" },
+            new() { Id = "ap2", DataHora = DateTime.Now.AddHours(-2).AddMinutes(-45), UsuarioNome = "Carlos M.", Portao = "Saída", Motivo = "Fim de recarga" },
+            new() { Id = "ap3", DataHora = DateTime.Now.AddDays(-1).AddHours(9), UsuarioNome = "Marina Souza", Portao = "Entrada", Motivo = "Reserva confirmada" },
+        };
+
+        FaturamentoUltimos7Dias = Enumerable.Range(0, 7).Reverse().Select(i => new FaturamentoDia
+        {
+            Data = DateTime.Today.AddDays(-i),
+            Faturamento = 180 + i * 23.4m + (i % 2 == 0 ? 15 : 0),
+            KwhVendidos = 95 + i * 11.2,
+            Sessoes = 6 + i % 4,
+        }).ToList();
     }
 }
