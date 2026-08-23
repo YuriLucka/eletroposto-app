@@ -2,9 +2,9 @@
 @implements IDisposable
 
 <MudLayout>
-    <MudAppBar Elevation="3" Color="Color.Dark">
+    <MudAppBar Elevation="3" Color="Color.Primary">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(() => _open = !_open)" />
-        <MudIcon Icon="@Icons.Material.Filled.EvStation" Color="Color.Primary" Class="ml-2 mr-2" />
+        <MudIcon Icon="@Icons.Material.Filled.EvStation" Color="Color.Inherit" Class="ml-2 mr-2" />
         <div class="ml-1 d-none d-sm-flex flex-column">
             <MudText Typo="Typo.h6" Class="admin-appbar-title">Painel Administrativo</MudText>
             <div class="admin-appbar-subtitle">
@@ -15,12 +15,14 @@
         <MudSpacer />
         <div class="d-none d-md-flex flex-column mr-4" style="text-align:right;">
             <MudText Typo="Typo.body2" Style="font-weight:600;">@_agora.ToString("HH:mm")</MudText>
-            <MudText Typo="Typo.caption" Class="mud-text-secondary">@_agora.ToString("dd/MM/yyyy")</MudText>
+            <MudText Typo="Typo.caption" Style="opacity:.85;">@_agora.ToString("dd/MM/yyyy")</MudText>
         </div>
         <MudTooltip Text="Nível de acesso: Proprietário (acesso total)">
-            <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.VerifiedUser" Class="admin-role-chip mr-2">Proprietário</MudChip>
+            <MudChip T="string" Color="Color.Inherit" Size="Size.Small" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.VerifiedUser" Class="admin-role-chip mr-1">Proprietário</MudChip>
         </MudTooltip>
-        <MudButton Variant="Variant.Outlined" Color="Color.Inherit" Href="" StartIcon="@Icons.Material.Filled.PhoneIphone">App do cliente</MudButton>
+        <MudTooltip Text="Ir para o app do cliente">
+            <MudIconButton Icon="@Icons.Material.Filled.PhoneIphone" Color="Color.Inherit" Href="" />
+        </MudTooltip>
     </MudAppBar>
 
     <MudDrawer @bind-Open="_open" Elevation="2" Variant="DrawerVariant.Mini" OpenMiniOnHover="true">
