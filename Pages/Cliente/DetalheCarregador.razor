@@ -47,6 +47,19 @@ else
         </MudCardContent>
     </MudCard>
 
+    <MudCard Elevation="1" Class="mb-4">
+        <MudCardContent Class="pa-4 d-flex align-center" Style="gap:16px;">
+            <QrPlaceholder Seed="@Carregador.Codigo" Size="72" />
+            <div>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">QR Code deste carregador</MudText>
+                <MudText Typo="Typo.body1" Class="mb-2"><b>@Carregador.Codigo</b></MudText>
+                <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" StartIcon="@Icons.Material.Filled.QrCodeScanner" OnClick="SimularLeituraQr">
+                    Simular leitura do QR
+                </MudButton>
+            </div>
+        </MudCardContent>
+    </MudCard>
+
     @if (Carregador.Status == StatusCarregador.Disponivel)
     {
         <MudStack Spacing="2">
@@ -67,4 +80,7 @@ else
     private Estacao? Estacao => State.Data.Estacoes.FirstOrDefault(e => e.Carregadores.Any(c => c.Id == Id));
 
     private void Avisar() => Snackbar.Add("Você será avisado quando este carregador for liberado.", Severity.Success);
+
+    private void SimularLeituraQr() =>
+        Snackbar.Add($"QR lido: equipamento {Carregador?.Codigo} identificado. Confirme abaixo para continuar.", Severity.Info);
 }

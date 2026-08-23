@@ -45,8 +45,15 @@ else
         <MudSelectItem T="FormaPagamento" Value="FormaPagamento.CartaoCredito">
             <MudIcon Icon="@Icons.Material.Filled.CreditCard" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Cartão de crédito
         </MudSelectItem>
+        <MudSelectItem T="FormaPagamento" Value="FormaPagamento.CartaoDebito">
+            <MudIcon Icon="@Icons.Material.Filled.CreditCard" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Cartão de débito
+        </MudSelectItem>
         <MudSelectItem T="FormaPagamento" Value="FormaPagamento.CarteiraPrepaga">
             <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Carteira (saldo @Format.Moeda(State.Data.UsuarioAtual.SaldoCarteira))
+        </MudSelectItem>
+        <MudSelectItem T="FormaPagamento" Value="FormaPagamento.PlanoMensal" Disabled="@(State.Data.UsuarioAtual.PlanoAtivo is null)">
+            <MudIcon Icon="@Icons.Material.Filled.CardMembership" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />
+            Plano mensal @(State.Data.UsuarioAtual.PlanoAtivo is null ? "(nenhum plano ativo)" : "")
         </MudSelectItem>
     </MudSelect>
 

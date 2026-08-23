@@ -37,6 +37,9 @@
                 <MudTextField T="string" Label="Nome completo" @bind-Value="_nome"
                               Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge"
                               Required Class="mb-3" />
+                <MudTextField T="string" Label="CPF" @bind-Value="_cpf"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AssignmentInd"
+                              Required Class="mb-3" />
                 <MudTextField T="string" Label="Telefone ou e-mail" @bind-Value="_loginId"
                               Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.PersonOutline"
                               Required Class="mb-3" />
@@ -55,6 +58,7 @@
 
 @code {
     private string _nome = "Yuri Rodrigues";
+    private string _cpf = "000.000.000-00";
     private string _loginId = "yrodrigues@dpinet.com.br";
     private string _senha = "123456";
 
