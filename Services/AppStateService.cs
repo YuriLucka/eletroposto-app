@@ -1,3 +1,4 @@
+using MudBlazor;
 using ev_charge_prototype.Models;
 
 namespace ev_charge_prototype.Services;
@@ -55,7 +56,7 @@ public class AppStateService : IDisposable
             if (sessao.BateriaAtualPercentual >= sessao.LimiteCargaPercentual && !_limiteNotificado)
             {
                 _limiteNotificado = true;
-                AddNotificacao("🔋", "Limite de bateria atingido",
+                AddNotificacao(Icons.Material.Filled.BatteryChargingFull, "Limite de bateria atingido",
                     $"Seu veículo atingiu {sessao.LimiteCargaPercentual}%. Você já pode encerrar a recarga.");
             }
 
@@ -96,7 +97,7 @@ public class AppStateService : IDisposable
         };
 
         carregador.SessaoAtualId = SessaoAtiva.Id;
-        AddNotificacao("⚡", "Recarga iniciada", $"Carregador {carregador.Codigo} — {estacao.Nome}.");
+        AddNotificacao(Icons.Material.Filled.ElectricBolt, "Recarga iniciada", $"Carregador {carregador.Codigo} — {estacao.Nome}.");
         OnChange?.Invoke();
         return SessaoAtiva;
     }
@@ -134,7 +135,7 @@ public class AppStateService : IDisposable
         Data.Transacoes.Insert(0, transacao);
         Data.UsuarioAtual.PontosFidelidade += (int)transacao.Valor;
 
-        AddNotificacao("✅", "Pagamento aprovado", $"Recarga finalizada — R$ {transacao.Valor:N2} via {DescreverFormaPagamento(transacao.FormaPagamento)}.");
+        AddNotificacao(Icons.Material.Filled.CheckCircle, "Pagamento aprovado", $"Recarga finalizada — R$ {transacao.Valor:N2} via {DescreverFormaPagamento(transacao.FormaPagamento)}.");
 
         SessaoAtiva = null;
         OnChange?.Invoke();
@@ -163,7 +164,7 @@ public class AppStateService : IDisposable
         await Task.Delay(1200);
         SetStatus(StatusPortao.Aberto);
         estacao.PortaoAbertoDesde = DateTime.Now;
-        AddNotificacao("🚪", entrada ? "Portão de entrada aberto" : "Portão de saída aberto", estacao.Nome);
+        AddNotificacao(Icons.Material.Filled.SensorDoor, entrada ? "Portão de entrada aberto" : "Portão de saída aberto", estacao.Nome);
     }
 
     public void FecharPortao(Estacao estacao, bool entrada = true)

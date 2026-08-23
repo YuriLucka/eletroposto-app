@@ -1,8 +1,15 @@
 @page "/"
 @inject AppStateService State
 
-<img src="https://picsum.photos/seed/evhomecharge/800/260" alt="Estação de recarga"
-     style="width:100%; height:120px; object-fit:cover; border-radius:16px;" class="mb-3" />
+<div class="home-hero mb-3">
+    <div class="home-hero-blob home-hero-blob-1"></div>
+    <div class="home-hero-blob home-hero-blob-2"></div>
+    <MudIcon Icon="@Icons.Material.Filled.EvStation" Class="home-hero-icon" />
+    <div class="home-hero-text">
+        <MudText Typo="Typo.subtitle2" Class="home-hero-title">Eletroposto Biguaçu</MudText>
+        <MudText Typo="Typo.caption" Class="home-hero-caption">Recarga rápida com energia limpa</MudText>
+    </div>
+</div>
 
 <MudText Typo="Typo.h5" Class="mb-4">Olá, @PrimeiroNome 👋</MudText>
 

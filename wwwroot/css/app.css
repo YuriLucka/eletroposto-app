@@ -208,3 +208,81 @@ html, body {
     border-radius: 6px;
     background: var(--mud-palette-primary, #00A86B);
 }
+
+/* ---- Branded boot splash (shown until Blazor WASM finishes loading) ---- */
+.boot-splash {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: radial-gradient(circle at 50% 30%, #16321f 0%, #0d1712 65%, #0a120e 100%);
+    color: #fff;
+    font-family: Roboto, Helvetica, Arial, sans-serif;
+}
+.boot-splash-badge {
+    width: 84px;
+    height: 84px;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #00A86B 0%, #0B5FFF 100%);
+    box-shadow: 0 12px 32px rgba(0,168,107,0.35);
+    animation: boot-badge-pulse 1.8s ease-in-out infinite;
+}
+@keyframes boot-badge-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+.boot-splash-title { font-size: 1.35rem; font-weight: 700; letter-spacing: .2px; margin-top: 6px; }
+.boot-splash-subtitle { font-size: .85rem; opacity: .6; margin-top: -8px; }
+.boot-splash-bar {
+    width: 200px;
+    height: 4px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.12);
+    overflow: hidden;
+    margin-top: 10px;
+}
+.boot-splash-bar-fill {
+    height: 100%;
+    width: var(--blazor-load-percentage, 0%);
+    background: linear-gradient(90deg, #00A86B, #22C58B);
+    transition: width .2s ease-out;
+}
+
+/* ---- Client app hero banner (Home/Login) — CSS-only, no external image dependency ---- */
+.home-hero {
+    position: relative;
+    height: 120px;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 20px;
+    background: linear-gradient(135deg, #00A86B 0%, #0B5FFF 100%);
+    color: #fff;
+}
+.home-hero-tall { height: 150px; }
+.home-hero-blob {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    pointer-events: none;
+}
+.home-hero-blob-1 { width: 160px; height: 160px; right: -50px; top: -60px; }
+.home-hero-blob-2 { width: 90px; height: 90px; right: 60px; bottom: -50px; background: rgba(255,255,255,0.08); }
+.home-hero-icon {
+    font-size: 2.75rem !important;
+    width: 1em; height: 1em;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2));
+}
+.home-hero-text { position: relative; z-index: 1; }
+.home-hero-title { color: #fff !important; font-weight: 700; }
+.home-hero-caption { color: rgba(255,255,255,0.85) !important; }

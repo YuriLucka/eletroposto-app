@@ -1,3 +1,5 @@
+using MudBlazor;
+
 namespace ev_charge_prototype.Models;
 
 public class SessaoRecarga
@@ -42,7 +44,7 @@ public class Notificacao
     public DateTime DataHora { get; set; }
     public string Titulo { get; set; } = "";
     public string Mensagem { get; set; } = "";
-    public string Icone { get; set; } = "🔋";
+    public string Icone { get; set; } = Icons.Material.Filled.BatteryChargingFull;
     public bool Lida { get; set; }
 }
 

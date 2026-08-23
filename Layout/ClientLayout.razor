@@ -11,7 +11,8 @@
             {
                 <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Inherit" OnClick="Voltar" />
             }
-            <MudText Typo="Typo.subtitle1" Class="ml-1">⚡ Eletroposto Biguaçu</MudText>
+            <MudIcon Icon="@Icons.Material.Filled.EvStation" Size="Size.Small" Class="ml-1 mr-1" />
+            <MudText Typo="Typo.subtitle1">Eletroposto Biguaçu</MudText>
             <MudSpacer />
             <MudIconButton Icon="@Icons.Material.Filled.NotificationsNone" Color="Color.Inherit" Href="/notificacoes">
                 @if (NaoLidas > 0)
@@ -38,7 +39,8 @@
 </div>
 
 <div style="position:fixed; bottom:8px; right:8px; z-index:2000;">
-    <MudButton Variant="Variant.Text" Size="Size.Small" Href="/admin" Style="opacity:.35;">Painel Admin →</MudButton>
+    <MudButton Variant="Variant.Text" Size="Size.Small" Href="/admin" Style="opacity:.35;"
+               EndIcon="@Icons.Material.Filled.ChevronRight">Painel Admin</MudButton>
 </div>
 
 @code {

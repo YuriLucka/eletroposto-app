@@ -1,3 +1,4 @@
+using MudBlazor;
 using ev_charge_prototype.Models;
 
 namespace ev_charge_prototype.Services;
@@ -102,11 +103,11 @@ public class MockDataStore
         Notificacoes = new List<Notificacao>
         {
             new() { Id = "n1", DataHora = DateTime.Now.AddMinutes(-5), Titulo = "Reserva confirmada",
-                    Mensagem = "Sua reserva no carregador BIGUACU-AC-001 às 18:00 foi confirmada.", Icone = "📅" },
+                    Mensagem = "Sua reserva no carregador BIGUACU-AC-001 às 18:00 foi confirmada.", Icone = Icons.Material.Filled.EventAvailable },
             new() { Id = "n2", DataHora = DateTime.Now.AddHours(-3), Titulo = "Pagamento aprovado",
-                    Mensagem = "Pagamento de R$ 80,93 aprovado via Pix.", Icone = "✅", Lida = true },
+                    Mensagem = "Pagamento de R$ 80,93 aprovado via Pix.", Icone = Icons.Material.Filled.CheckCircle, Lida = true },
             new() { Id = "n3", DataHora = DateTime.Now.AddDays(-2), Titulo = "Recarga finalizada",
-                    Mensagem = "Seu veículo atingiu 80%. Retire o veículo para evitar cobrança de permanência.", Icone = "🔋", Lida = true },
+                    Mensagem = "Seu veículo atingiu 80%. Retire o veículo para evitar cobrança de permanência.", Icone = Icons.Material.Filled.BatteryChargingFull, Lida = true },
         };
 
         Planos = new List<Plano>

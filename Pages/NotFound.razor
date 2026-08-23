@@ -1,7 +1,9 @@
+@page "/not-found"
 @layout ClientLayout
 
-<MudPaper Class="pa-6 mt-8" Elevation="0">
-    <MudText Typo="Typo.h5">😕 Página não encontrada</MudText>
+<MudPaper Class="pa-6 mt-8 d-flex flex-column align-center text-center" Elevation="0">
+    <MudIcon Icon="@Icons.Material.Filled.SearchOff" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+    <MudText Typo="Typo.h5">Página não encontrada</MudText>
     <MudText Class="mt-2" Color="Color.Secondary">O endereço acessado não existe neste protótipo.</MudText>
     <MudButton Class="mt-4" Variant="Variant.Filled" Color="Color.Primary" Href="/">Voltar ao início</MudButton>
 </MudPaper>
