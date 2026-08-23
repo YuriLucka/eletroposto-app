@@ -53,7 +53,7 @@
                     @if (carregador.Status == StatusCarregador.Manutencao)
                     {
                         <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2" Icon="@Icons.Material.Filled.Build">
-                            🟡 Manutenção programada
+                            Manutenção programada
                         </MudAlert>
                     }
 
@@ -140,7 +140,7 @@
     {
         c.Status = StatusCarregador.Manutencao;
         State.NotifyStateChanged();
-        State.AddNotificacao("🛠️", "Carregador em manutenção", $"O carregador {c.Codigo} foi colocado em manutenção pelo painel administrativo.");
+        State.AddNotificacao(Icons.Material.Filled.Build, "Carregador em manutenção", $"O carregador {c.Codigo} foi colocado em manutenção pelo painel administrativo.");
         Snackbar.Add($"Carregador {c.Codigo} colocado em manutenção.", Severity.Warning);
     }
 

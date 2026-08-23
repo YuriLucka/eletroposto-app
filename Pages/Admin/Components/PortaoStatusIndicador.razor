@@ -8,10 +8,10 @@
 
     private string Texto => Status switch
     {
-        StatusPortao.Fechado => "🟢 Fechado",
-        StatusPortao.Abrindo => "🟡 Abrindo…",
-        StatusPortao.Aberto => "🔵 Aberto",
-        StatusPortao.Falha => "🔴 Falha",
+        StatusPortao.Fechado => "Fechado",
+        StatusPortao.Abrindo => "Abrindo…",
+        StatusPortao.Aberto => "Aberto",
+        StatusPortao.Falha => "Falha",
         _ => Status.ToString(),
     };
 
