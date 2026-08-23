@@ -16,7 +16,7 @@ else if (_confirmada && _reserva is not null)
         </div>
         <MudText Typo="Typo.subtitle2" Class="mb-1">Código: <b>@_reserva.CodigoQr</b></MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary">@Format.Data(_reserva.DataHora) às @Format.Hora(_reserva.DataHora) · @_reserva.DuracaoMinutos min</MudText>
-        <MudButton Class="mt-4 py-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth Href="/reservas">VER MINHAS RESERVAS</MudButton>
+        <MudButton Class="mt-4 py-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth Href="reservas">VER MINHAS RESERVAS</MudButton>
     </MudPaper>
 }
 else

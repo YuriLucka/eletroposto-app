@@ -16,7 +16,7 @@
                     Color="@(indisponivel ? Color.Default : Color.Primary)"
                     Size="Size.Small"
                     Disabled="@indisponivel"
-                    Href="@(indisponivel ? null : $"/estacao/{estacao.Id}")" />
+                    Href="@(indisponivel ? null : $"estacao/{estacao.Id}")" />
         </div>
     }
 </MudPaper>
@@ -52,7 +52,7 @@
                 </MudText>
             </MudCardContent>
             <MudCardActions Class="px-4 pb-4 pt-0">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Class="py-2" Disabled="@indisponivel" Href="@($"/estacao/{estacao.Id}")">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Class="py-2" Disabled="@indisponivel" Href="@($"estacao/{estacao.Id}")">
                     VER CARREGADORES
                 </MudButton>
             </MudCardActions>

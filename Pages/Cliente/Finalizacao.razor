@@ -5,7 +5,7 @@
 @if (State.SessaoAtiva is not { Status: StatusSessao.Carregando })
 {
     <MudAlert Severity="Severity.Info" Class="mt-4">Nenhuma recarga ativa para finalizar.</MudAlert>
-    <MudButton Class="mt-4 py-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth Href="/mapa">Encontrar carregador</MudButton>
+    <MudButton Class="mt-4 py-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth Href="mapa">Encontrar carregador</MudButton>
 }
 else
 {
@@ -54,6 +54,6 @@ else
     private void Confirmar()
     {
         var transacao = State.FinalizarRecarga();
-        Nav.NavigateTo($"/comprovante/{transacao.Id}");
+        Nav.NavigateTo($"comprovante/{transacao.Id}");
     }
 }

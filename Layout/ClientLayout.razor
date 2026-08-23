@@ -14,7 +14,7 @@
             <MudIcon Icon="@Icons.Material.Filled.EvStation" Size="Size.Small" Class="ml-1 mr-1" />
             <MudText Typo="Typo.subtitle1">Eletroposto Biguaçu</MudText>
             <MudSpacer />
-            <MudIconButton Icon="@Icons.Material.Filled.NotificationsNone" Color="Color.Inherit" Href="/notificacoes">
+            <MudIconButton Icon="@Icons.Material.Filled.NotificationsNone" Color="Color.Inherit" Href="notificacoes">
                 @if (NaoLidas > 0)
                 {
                     <MudBadge Content="@NaoLidas" Color="Color.Error" Overlap="true" />
@@ -28,18 +28,18 @@
 
         <MudPaper Class="phone-bottom-nav" Elevation="4">
             <MudBottomNavigation Value="@Rota" Color="Color.Primary" Rounded="false" Dense="true">
-                <MudBottomNavigationItem Icon="@Icons.Material.Filled.Home" Value="@("home")" Href="/" />
-                <MudBottomNavigationItem Icon="@Icons.Material.Filled.Map" Value="@("mapa")" Href="/mapa" />
-                <MudBottomNavigationItem Icon="@Icons.Material.Filled.CalendarMonth" Value="@("reservas")" Href="/reservas" />
-                <MudBottomNavigationItem Icon="@Icons.Material.Filled.History" Value="@("historico")" Href="/historico" />
-                <MudBottomNavigationItem Icon="@Icons.Material.Filled.Person" Value="@("perfil")" Href="/perfil" />
+                <MudBottomNavigationItem Icon="@Icons.Material.Filled.Home" Value="@("home")" Href="" />
+                <MudBottomNavigationItem Icon="@Icons.Material.Filled.Map" Value="@("mapa")" Href="mapa" />
+                <MudBottomNavigationItem Icon="@Icons.Material.Filled.CalendarMonth" Value="@("reservas")" Href="reservas" />
+                <MudBottomNavigationItem Icon="@Icons.Material.Filled.History" Value="@("historico")" Href="historico" />
+                <MudBottomNavigationItem Icon="@Icons.Material.Filled.Person" Value="@("perfil")" Href="perfil" />
             </MudBottomNavigation>
         </MudPaper>
     </div>
 </div>
 
 <div style="position:fixed; bottom:8px; right:8px; z-index:2000;">
-    <MudButton Variant="Variant.Text" Size="Size.Small" Href="/admin" Style="opacity:.35;"
+    <MudButton Variant="Variant.Text" Size="Size.Small" Href="admin" Style="opacity:.35;"
                EndIcon="@Icons.Material.Filled.ChevronRight">Painel Admin</MudButton>
 </div>
 

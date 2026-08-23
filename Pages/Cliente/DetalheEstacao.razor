@@ -23,7 +23,7 @@ else
                 <div><MudChip T="string" Size="Size.Small" Color="@Format.PortaoCor(Estacao.StatusPortaoSaida)" Icon="@Format.PortaoIcone(Estacao.StatusPortaoSaida)">@Format.PortaoTexto(Estacao.StatusPortaoSaida)</MudChip></div>
             </div>
         </MudStack>
-        <MudButton Class="mt-4 py-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth StartIcon="@Icons.Material.Filled.MeetingRoom" Href="@($"/portao/{Estacao.Id}")">
+        <MudButton Class="mt-4 py-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth StartIcon="@Icons.Material.Filled.MeetingRoom" Href="@($"portao/{Estacao.Id}")">
             ABRIR PORTÃO
         </MudButton>
     </MudPaper>
@@ -50,7 +50,7 @@ else
                     </MudText>
                 </MudCardContent>
                 <MudCardActions Class="px-4 pb-4 pt-0">
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Href="@($"/carregador/{c.Id}")">Ver carregador</MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Href="@($"carregador/{c.Id}")">Ver carregador</MudButton>
                 </MudCardActions>
             </MudCard>
         }

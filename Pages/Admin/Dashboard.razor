@@ -17,7 +17,7 @@
                  Color="Color.Info" TrendValue="+8%" TrendUp="true" />
     </MudItem>
     <MudItem xs="12" sm="6" md="4" lg="2">
-        <KpiCard Icon="@Icons.Material.Filled.AttachMoney" Title="Faturamento (hoje)" Value="@($"R$ {_hoje.Faturamento:N2}")"
+        <KpiCard Icon="@Icons.Material.Filled.AttachMoney" Title="Faturamento (hoje)" Value="@($"R$ {_hoje.Faturamento:N2}")"
                  Color="Color.Success" TrendValue="+15%" TrendUp="true" />
     </MudItem>
     <MudItem xs="12" sm="6" md="4" lg="2">
@@ -99,7 +99,7 @@
 
     private readonly LineChartOptions _chartOptions = new()
     {
-        YAxisToStringFunc = y => $"R$ {y:N0}",
+        YAxisToStringFunc = y => $"R$ {y:N0}",
         YAxisTicks = 5,
         LineStrokeWidth = 3,
         ShowDataMarkers = true,

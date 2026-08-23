@@ -9,7 +9,7 @@ namespace ev_charge_prototype.Pages.Cliente;
 /// </summary>
 public static class Format
 {
-    public static string Moeda(decimal v) => $"R$ {v:N2}";
+    public static string Moeda(decimal v) => $"R$ {v:N2}";
     public static string Data(DateTime d) => d.ToString("dd/MM/yyyy");
     public static string Hora(DateTime d) => d.ToString("HH:mm");
     public static string DataHora(DateTime d) => d.ToString("dd/MM/yyyy HH:mm");

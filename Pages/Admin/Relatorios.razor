@@ -37,7 +37,7 @@
 
 <MudGrid Class="mb-4">
     <MudItem xs="12" sm="6" md="4" lg="2">
-        <KpiCard Icon="@Icons.Material.Filled.AttachMoney" Title="Faturamento total" Value="@($"R$ {_faturamentoTotal:N2}")" Color="Color.Success" />
+        <KpiCard Icon="@Icons.Material.Filled.AttachMoney" Title="Faturamento total" Value="@($"R$ {_faturamentoTotal:N2}")" Color="Color.Success" />
     </MudItem>
     <MudItem xs="12" sm="6" md="4" lg="2">
         <KpiCard Icon="@Icons.Material.Filled.Bolt" Title="kWh vendidos" Value="@($"{_kwhTotal:N1}")" Color="Color.Info" />
@@ -46,13 +46,13 @@
         <KpiCard Icon="@Icons.Material.Filled.BatteryChargingFull" Title="Sessões" Value="@_sessoesTotal.ToString()" Color="Color.Primary" />
     </MudItem>
     <MudItem xs="12" sm="6" md="4" lg="2">
-        <KpiCard Icon="@Icons.Material.Filled.LocalOffer" Title="Ticket médio" Value="@($"R$ {_ticketMedio:N2}")" Color="Color.Secondary" SubText="faturamento / sessões" />
+        <KpiCard Icon="@Icons.Material.Filled.LocalOffer" Title="Ticket médio" Value="@($"R$ {_ticketMedio:N2}")" Color="Color.Secondary" SubText="faturamento / sessões" />
     </MudItem>
     <MudItem xs="12" sm="6" md="4" lg="2">
-        <KpiCard Icon="@Icons.Material.Filled.ElectricBolt" Title="Custo estimado de energia" Value="@($"R$ {_custoEnergia:N2}")" Color="Color.Warning" SubText="kWh × R$ 0,65 / kWh" />
+        <KpiCard Icon="@Icons.Material.Filled.ElectricBolt" Title="Custo estimado de energia" Value="@($"R$ {_custoEnergia:N2}")" Color="Color.Warning" SubText="kWh × R$ 0,65 / kWh" />
     </MudItem>
     <MudItem xs="12" sm="6" md="4" lg="2">
-        <KpiCard Icon="@Icons.Material.Filled.Savings" Title="Margem estimada" Value="@($"R$ {_margem:N2}")" Color="Color.Tertiary" SubText="faturamento − custo de energia" />
+        <KpiCard Icon="@Icons.Material.Filled.Savings" Title="Margem estimada" Value="@($"R$ {_margem:N2}")" Color="Color.Tertiary" SubText="faturamento − custo de energia" />
     </MudItem>
 </MudGrid>
 
@@ -141,7 +141,7 @@
     private string[] _labels = Array.Empty<string>();
     private readonly BarChartOptions _chartOptions = new()
     {
-        YAxisToStringFunc = y => $"R$ {y:N0}",
+        YAxisToStringFunc = y => $"R$ {y:N0}",
     };
 
     private record UtilizacaoItem(string Codigo, int Percentual);

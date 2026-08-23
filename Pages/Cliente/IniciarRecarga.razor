@@ -82,6 +82,6 @@ else
     {
         if (Carregador is null || string.IsNullOrEmpty(_veiculoId)) return;
         var sessao = State.IniciarRecarga(Carregador.Id, _veiculoId, _formaPagamento);
-        Nav.NavigateTo($"/recarga/{sessao.Id}");
+        Nav.NavigateTo($"recarga/{sessao.Id}");
     }
 }

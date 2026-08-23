@@ -88,6 +88,11 @@ code {
     text-align: start;
 }
 
+/* ---- Typography: formal/premium sans, Inter over MudBlazor's default Roboto ---- */
+html, body, .mud-typography, [class*="mud-typography-"] {
+    font-family: 'Inter', Roboto, Helvetica, Arial, sans-serif !important;
+}
+
 /* ---- Client app "phone" shell ---- */
 html, body {
     margin: 0;
@@ -159,7 +164,7 @@ html, body {
 .admin-role-chip { font-weight: 600 !important; letter-spacing: .2px; }
 
 .kpi-card {
-    border-left: 4px solid var(--mud-palette-primary, #00A86B);
+    border-left: 4px solid var(--mud-palette-primary, #0B5FFF);
     transition: transform .15s ease, box-shadow .15s ease;
 }
 .kpi-card:hover { transform: translateY(-2px); }
@@ -170,15 +175,15 @@ html, body {
 .admin-section-icon {
     width: 40px; height: 40px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    background: var(--mud-palette-primary-hover, rgba(0,168,107,0.1));
-    color: var(--mud-palette-primary, #00A86B);
+    background: var(--mud-palette-primary-hover, rgba(11,95,255,0.1));
+    color: var(--mud-palette-primary, #0B5FFF);
     flex: none;
 }
 
 .eletroposto-banner {
     height: 96px;
     border-radius: 10px 10px 0 0;
-    background: linear-gradient(135deg, var(--mud-palette-primary, #00A86B) 0%, var(--mud-palette-secondary, #0B5FFF) 100%);
+    background: linear-gradient(135deg, var(--mud-palette-primary, #0B5FFF) 0%, var(--mud-palette-secondary, #00A86B) 100%);
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 16px;
     color: #fff;
@@ -206,7 +211,7 @@ html, body {
 .util-bar-fill {
     height: 100%;
     border-radius: 6px;
-    background: var(--mud-palette-primary, #00A86B);
+    background: var(--mud-palette-primary, #0B5FFF);
 }
 
 /* ---- Branded boot splash (shown until Blazor WASM finishes loading) ---- */
@@ -218,9 +223,9 @@ html, body {
     align-items: center;
     justify-content: center;
     gap: 14px;
-    background: radial-gradient(circle at 50% 30%, #16321f 0%, #0d1712 65%, #0a120e 100%);
+    background: radial-gradient(circle at 50% 30%, #142238 0%, #0e1726 65%, #0a1220 100%);
     color: #fff;
-    font-family: Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', Roboto, Helvetica, Arial, sans-serif;
 }
 .boot-splash-badge {
     width: 84px;
@@ -229,7 +234,7 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #00A86B 0%, #0B5FFF 100%);
+    background: linear-gradient(135deg, #0B5FFF 0%, #00A86B 100%);
     box-shadow: 0 12px 32px rgba(0,168,107,0.35);
     animation: boot-badge-pulse 1.8s ease-in-out infinite;
 }
@@ -250,7 +255,7 @@ html, body {
 .boot-splash-bar-fill {
     height: 100%;
     width: var(--blazor-load-percentage, 0%);
-    background: linear-gradient(90deg, #00A86B, #22C58B);
+    background: linear-gradient(90deg, #0B5FFF, #5B8DEF);
     transition: width .2s ease-out;
 }
 
@@ -264,7 +269,7 @@ html, body {
     align-items: center;
     gap: 14px;
     padding: 0 20px;
-    background: linear-gradient(135deg, #00A86B 0%, #0B5FFF 100%);
+    background: linear-gradient(135deg, #0B5FFF 0%, #00A86B 100%);
     color: #fff;
 }
 .home-hero-tall { height: 150px; }

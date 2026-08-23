@@ -63,8 +63,8 @@ else
     @if (Carregador.Status == StatusCarregador.Disponivel)
     {
         <MudStack Spacing="2">
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-2" StartIcon="@Icons.Material.Filled.CalendarMonth" Href="@($"/reserva/{Carregador.Id}")">RESERVAR</MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-3" StartIcon="@Icons.Material.Filled.ElectricBolt" Href="@($"/carregador/{Carregador.Id}/iniciar")">INICIAR RECARGA</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-2" StartIcon="@Icons.Material.Filled.CalendarMonth" Href="@($"reserva/{Carregador.Id}")">RESERVAR</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-3" StartIcon="@Icons.Material.Filled.ElectricBolt" Href="@($"carregador/{Carregador.Id}/iniciar")">INICIAR RECARGA</MudButton>
         </MudStack>
     }
     else if (Carregador.Status == StatusCarregador.EmUso)

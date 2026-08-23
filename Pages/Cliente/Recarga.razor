@@ -10,7 +10,7 @@
         <MudIcon Icon="@Icons.Material.Filled.BatteryUnknown" Style="font-size:3.5rem;" Color="Color.Secondary" />
         <MudText Typo="Typo.h6" Class="mt-3 mb-1">Nenhuma recarga em andamento</MudText>
         <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">Encontre um carregador disponível para iniciar.</MudText>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="py-2" StartIcon="@Icons.Material.Filled.Map" Href="/mapa">Encontrar carregador</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="py-2" StartIcon="@Icons.Material.Filled.Map" Href="mapa">Encontrar carregador</MudButton>
     </MudPaper>
 }
 else
@@ -120,7 +120,7 @@ else
             yesText: "Encerrar", cancelText: "Cancelar");
 
         if (confirmado == true)
-            Nav.NavigateTo("/finalizacao");
+            Nav.NavigateTo("finalizacao");
     }
 
     public void Dispose() => State.OnChange -= Atualizar;

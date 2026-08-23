@@ -94,7 +94,7 @@ public class AppStateService : IDisposable
         if (mudou) OnChange?.Invoke();
     }
 
-    private static string Format2(decimal v) => $"R$ {v:N2}";
+    private static string Format2(decimal v) => $"R$ {v:N2}";
 
     private bool _limiteNotificado;
     private bool _permanenciaAvisada;
@@ -162,7 +162,7 @@ public class AppStateService : IDisposable
         Data.Transacoes.Insert(0, transacao);
         Data.UsuarioAtual.PontosFidelidade += (int)transacao.Valor;
 
-        AddNotificacao(Icons.Material.Filled.CheckCircle, "Pagamento aprovado", $"Recarga finalizada — R$ {transacao.Valor:N2} via {DescreverFormaPagamento(transacao.FormaPagamento)}.");
+        AddNotificacao(Icons.Material.Filled.CheckCircle, "Pagamento aprovado", $"Recarga finalizada — R$ {transacao.Valor:N2} via {DescreverFormaPagamento(transacao.FormaPagamento)}.");
 
         OnChange?.Invoke();
         return transacao;
