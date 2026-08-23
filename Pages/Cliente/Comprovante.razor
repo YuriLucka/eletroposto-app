@@ -90,8 +90,7 @@ else
     private Transacao? Transacao => State.Data.Transacoes.FirstOrDefault(t => t.Id == Id);
 
     private SessaoRecarga? SessaoPendente =>
-        State.SessaoAtiva is { Status: StatusSessao.Finalizada, VeiculoRetirado: false } s
-        && Transacao is not null && s.CarregadorCodigo == Transacao.CarregadorCodigo
+        State.SessaoAtiva is { Status: StatusSessao.Finalizada, VeiculoRetirado: false } s && s.TransacaoId == Id
             ? s : null;
 
     private void EmBreve() => Snackbar.Add("Em breve.", Severity.Info);

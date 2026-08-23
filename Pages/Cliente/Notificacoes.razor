@@ -20,7 +20,7 @@ else
                             <MudIcon Icon="@n.Icone" Size="Size.Small" />
                         </MudAvatar>
                         <div>
-                            <MudText Typo="Typo.subtitle2">@(n.Lida ? n.Titulo : new MarkupString($"<b>{n.Titulo}</b>"))</MudText>
+                            <MudText Typo="Typo.subtitle2" Style="@(n.Lida ? "" : "font-weight:700;")">@n.Titulo</MudText>
                             <MudText Typo="Typo.body2" Color="Color.Secondary">@n.Mensagem</MudText>
                             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1 d-block">@Format.DataHora(n.DataHora)</MudText>
                         </div>

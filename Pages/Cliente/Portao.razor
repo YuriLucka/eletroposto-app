@@ -22,6 +22,13 @@ else
         }
     </MudPaper>
 
+    @if (Estacao.AcessoBloqueado)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4" Icon="@Icons.Material.Filled.Block">
+            Acesso bloqueado pela administração no momento. Fale com o suporte.
+        </MudAlert>
+    }
+
     @if (MostrarAviso)
     {
         <MudAlert Severity="Severity.Warning" Class="mb-4" Icon="@Icons.Material.Filled.WarningAmber">
@@ -44,12 +51,12 @@ else
         }
         <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-3"
                    StartIcon="@Icons.Material.Filled.MeetingRoom"
-                   Disabled="@(Estacao.StatusPortaoEntrada == StatusPortao.Abrindo)"
+                   Disabled="@(Estacao.StatusPortaoEntrada == StatusPortao.Abrindo || Estacao.AcessoBloqueado)"
                    OnClick="@(() => Abrir(true))">
             ABRIR PORTÃO
         </MudButton>
         <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth Class="mt-2" StartIcon="@Icons.Material.Filled.QrCodeScanner"
-                   Disabled="@(Estacao.StatusPortaoEntrada == StatusPortao.Abrindo)"
+                   Disabled="@(Estacao.StatusPortaoEntrada == StatusPortao.Abrindo || Estacao.AcessoBloqueado)"
                    OnClick="@(() => Abrir(true))">
             Simular leitura de QR Code
         </MudButton>
@@ -70,7 +77,7 @@ else
         }
         <MudButton Variant="Variant.Filled" Color="Color.Secondary" FullWidth Size="Size.Large" Class="py-3"
                    StartIcon="@Icons.Material.Filled.ExitToApp"
-                   Disabled="@(Estacao.StatusPortaoSaida == StatusPortao.Abrindo)"
+                   Disabled="@(Estacao.StatusPortaoSaida == StatusPortao.Abrindo || Estacao.AcessoBloqueado)"
                    OnClick="@(() => Abrir(false))">
             ABRIR PORTÃO DE SAÍDA
         </MudButton>
@@ -89,7 +96,9 @@ else
     };
 
     private Estacao? Estacao => State.Data.Estacoes.FirstOrDefault(e => e.Id == EstacaoId);
-    private bool MostrarAviso => Estacao?.PortaoAbertoDesde is { } d && (DateTime.Now - d).TotalSeconds > 8;
+    private bool MostrarAviso =>
+        (Estacao?.PortaoEntradaAbertoDesde is { } de && (DateTime.Now - de).TotalSeconds > 8) ||
+        (Estacao?.PortaoSaidaAbertoDesde is { } ds && (DateTime.Now - ds).TotalSeconds > 8);
 
     protected override void OnInitialized() => State.OnChange += Atualizar;
 

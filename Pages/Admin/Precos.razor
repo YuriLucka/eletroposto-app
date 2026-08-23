@@ -100,6 +100,8 @@
         public required Carregador Carregador { get; set; }
         public decimal PrecoEditado { get; set; }
         public decimal TaxaEditada { get; set; }
+        public decimal UltimoPrecoConhecido { get; set; }
+        public decimal UltimaTaxaConhecida { get; set; }
     }
 
     private List<GrupoPreco> _grupos = new();
@@ -134,13 +136,25 @@
         _linhas = todos.Select(x =>
         {
             if (linhasExistentes.TryGetValue(x.Carregador.Id, out var existente))
+            {
+                // Só resincroniza os campos editáveis se ninguém estiver com uma edição pendente nesta
+                // linha — senão uma mudança em massa (AplicarPorTipo) apagaria o que o operador digitou.
+                if (existente.PrecoEditado == existente.UltimoPrecoConhecido)
+                    existente.PrecoEditado = x.Carregador.PrecoPorKwh;
+                if (existente.TaxaEditada == existente.UltimaTaxaConhecida)
+                    existente.TaxaEditada = x.Carregador.TaxaOcupacaoPorMinuto;
+                existente.UltimoPrecoConhecido = x.Carregador.PrecoPorKwh;
+                existente.UltimaTaxaConhecida = x.Carregador.TaxaOcupacaoPorMinuto;
                 return existente;
+            }
             return new LinhaPreco
             {
                 Estacao = x.Estacao,
                 Carregador = x.Carregador,
                 PrecoEditado = x.Carregador.PrecoPorKwh,
                 TaxaEditada = x.Carregador.TaxaOcupacaoPorMinuto,
+                UltimoPrecoConhecido = x.Carregador.PrecoPorKwh,
+                UltimaTaxaConhecida = x.Carregador.TaxaOcupacaoPorMinuto,
             };
         }).ToList();
     }
@@ -165,6 +179,8 @@
     {
         linha.Carregador.PrecoPorKwh = linha.PrecoEditado;
         linha.Carregador.TaxaOcupacaoPorMinuto = linha.TaxaEditada;
+        linha.UltimoPrecoConhecido = linha.PrecoEditado;
+        linha.UltimaTaxaConhecida = linha.TaxaEditada;
         State.NotifyStateChanged();
         Snackbar.Add($"Preço do carregador {linha.Carregador.Codigo} atualizado.", Severity.Success);
     }

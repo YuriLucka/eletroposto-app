@@ -27,6 +27,7 @@ public class SessaoRecarga
     public bool VeiculoRetirado { get; set; }
     public double PermanenciaSegundosSimulados { get; set; }
     public decimal ValorOcupacaoAcumulado { get; set; }
+    public string? TransacaoId { get; set; }
 }
 
 public class Transacao

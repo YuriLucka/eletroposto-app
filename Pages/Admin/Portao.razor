@@ -10,12 +10,12 @@
 <MudGrid Class="mb-4">
     @foreach (var estacao in State.Data.Estacoes)
     {
-        var bloqueado = _bloqueado.TryGetValue(estacao.Id, out var b) && b;
+        var bloqueado = estacao.AcessoBloqueado;
         <MudItem xs="12" md="6">
             <MudPaper Class="pa-4" Elevation="2">
                 <div class="d-flex align-center justify-space-between mb-2">
                     <MudText Typo="Typo.h6">@estacao.Nome</MudText>
-                    <MudSwitch T="bool" Value="bloqueado" ValueChanged="@(v => AlternarBloqueio(estacao.Id, v))"
+                    <MudSwitch T="bool" Value="bloqueado" ValueChanged="@(v => AlternarBloqueio(estacao, v))"
                                Color="Color.Error" Label="Bloquear acesso" LabelPlacement="Placement.Start" />
                 </div>
 
@@ -26,10 +26,16 @@
                     </MudAlert>
                 }
 
-                @if (estacao.PortaoAbertoDesde is { } abertoDesde && MinutosAberto(abertoDesde) >= 5)
+                @if (estacao.PortaoEntradaAbertoDesde is { } entradaAberta && MinutosAberto(entradaAberta) >= 5)
                 {
                     <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2" Icon="@Icons.Material.Filled.WarningAmber">
-                        Portão aberto há @MinutosAberto(abertoDesde) min
+                        Portão de entrada aberto há @MinutosAberto(entradaAberta) min
+                    </MudAlert>
+                }
+                @if (estacao.PortaoSaidaAbertoDesde is { } saidaAberta && MinutosAberto(saidaAberta) >= 5)
+                {
+                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2" Icon="@Icons.Material.Filled.WarningAmber">
+                        Portão de saída aberto há @MinutosAberto(saidaAberta) min
                     </MudAlert>
                 }
 
@@ -114,7 +120,6 @@
 </MudPaper>
 
 @code {
-    private readonly Dictionary<string, bool> _bloqueado = new();
     private string _novoUsuario = "";
     private string _novoPortao = "Entrada";
     private string _novoMotivo = "";
@@ -128,9 +133,10 @@
 
     private int MinutosAberto(DateTime desde) => (int)(DateTime.Now - desde).TotalMinutes;
 
-    private void AlternarBloqueio(string estacaoId, bool valor)
+    private void AlternarBloqueio(Estacao estacao, bool valor)
     {
-        _bloqueado[estacaoId] = valor;
+        estacao.AcessoBloqueado = valor;
+        State.NotifyStateChanged();
         Snackbar.Add(valor ? "Acesso bloqueado para este eletroposto." : "Acesso liberado para este eletroposto.",
             valor ? Severity.Error : Severity.Success);
     }

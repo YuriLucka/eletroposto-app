@@ -6,6 +6,14 @@
 {
     <MudAlert Severity="Severity.Warning" Class="mt-4">Carregador não encontrado.</MudAlert>
 }
+else if (State.TemSessaoPendente)
+{
+    <MudAlert Severity="Severity.Warning" Class="mt-4">
+        Você já tem uma recarga em andamento ou aguardando retirada do veículo. Finalize-a antes de iniciar outra.
+    </MudAlert>
+    <MudButton Class="mt-4 py-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth
+               Href="@($"recarga/{State.SessaoAtiva!.Id}")">VER RECARGA ATIVA</MudButton>
+}
 else if (Carregador.Status != StatusCarregador.Disponivel)
 {
     <MudAlert Severity="Severity.Warning" Class="mt-4">Este carregador não está disponível para iniciar uma recarga agora.</MudAlert>

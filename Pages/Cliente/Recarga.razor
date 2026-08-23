@@ -4,7 +4,7 @@
 @inject IDialogService DialogService
 @implements IDisposable
 
-@if (State.SessaoAtiva is null)
+@if (State.SessaoAtiva is not { Status: StatusSessao.Carregando })
 {
     <MudPaper Class="pa-6 mt-8 text-center" Elevation="0">
         <MudIcon Icon="@Icons.Material.Filled.BatteryUnknown" Style="font-size:3.5rem;" Color="Color.Secondary" />
@@ -77,7 +77,13 @@ else
 @code {
     [Parameter] public string SessionId { get; set; } = "";
 
-    protected override void OnInitialized() => State.OnChange += Atualizar;
+    protected override void OnInitialized()
+    {
+        State.OnChange += Atualizar;
+        // Recarga já paga aguardando retirada do veículo: manda para o comprovante em vez de mostrar tela vazia.
+        if (State.SessaoAtiva is { Status: StatusSessao.Finalizada, TransacaoId: { } transacaoId })
+            Nav.NavigateTo($"comprovante/{transacaoId}");
+    }
 
     private void Atualizar() => InvokeAsync(StateHasChanged);
 

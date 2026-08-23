@@ -82,7 +82,7 @@
 
         foreach (var carregador in estacao.Carregadores)
         {
-            if (desativar && carregador.Status != StatusCarregador.Manutencao)
+            if (desativar && carregador.Status is not (StatusCarregador.Manutencao or StatusCarregador.EmUso))
             {
                 carregador.Status = StatusCarregador.Indisponivel;
             }

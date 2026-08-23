@@ -146,6 +146,8 @@ html, body {
 
 .mud-appbar.client-appbar { position: relative !important; }
 
+.mud-radio-group { display: flex !important; flex-direction: column !important; flex-wrap: nowrap !important; align-items: flex-start !important; gap: 4px; }
+
 /* ---- Admin operations dashboard ---- */
 .admin-appbar-title { line-height: 1.15; }
 .admin-appbar-subtitle { opacity: 0.75; display: flex; align-items: center; gap: 6px; }

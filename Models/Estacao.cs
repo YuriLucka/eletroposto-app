@@ -12,7 +12,9 @@ public class Estacao
     public List<Carregador> Carregadores { get; set; } = new();
     public StatusPortao StatusPortaoEntrada { get; set; } = StatusPortao.Fechado;
     public StatusPortao StatusPortaoSaida { get; set; } = StatusPortao.Fechado;
-    public DateTime? PortaoAbertoDesde { get; set; }
+    public DateTime? PortaoEntradaAbertoDesde { get; set; }
+    public DateTime? PortaoSaidaAbertoDesde { get; set; }
+    public bool AcessoBloqueado { get; set; }
 
     public int Disponiveis => Carregadores.Count(c => c.Status == StatusCarregador.Disponivel);
     public int Total => Carregadores.Count;

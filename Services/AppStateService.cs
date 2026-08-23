@@ -100,8 +100,14 @@ public class AppStateService : IDisposable
     private bool _permanenciaAvisada;
     private bool _taxaOcupacaoAvisada;
 
+    /// <summary>True enquanto houver uma sessão carregando ou aguardando confirmação de retirada — o protótipo simula apenas um veículo/sessão por vez.</summary>
+    public bool TemSessaoPendente => SessaoAtiva is not null;
+
     public SessaoRecarga IniciarRecarga(string carregadorId, string veiculoId, FormaPagamento formaPagamento)
     {
+        if (SessaoAtiva is not null)
+            throw new InvalidOperationException("Já existe uma recarga em andamento ou aguardando retirada do veículo.");
+
         var carregador = Data.Estacoes.SelectMany(e => e.Carregadores).First(c => c.Id == carregadorId);
         var estacao = Data.Estacoes.First(e => e.Carregadores.Contains(carregador));
         var veiculo = Data.UsuarioAtual.Veiculos.First(v => v.Id == veiculoId);
@@ -161,6 +167,7 @@ public class AppStateService : IDisposable
         };
         Data.Transacoes.Insert(0, transacao);
         Data.UsuarioAtual.PontosFidelidade += (int)transacao.Valor;
+        sessao.TransacaoId = transacao.Id;
 
         AddNotificacao(Icons.Material.Filled.CheckCircle, "Pagamento aprovado", $"Recarga finalizada — R$ {transacao.Valor:N2} via {DescreverFormaPagamento(transacao.FormaPagamento)}.");
 
@@ -175,15 +182,33 @@ public class AppStateService : IDisposable
         var carregador = CarregadorDaSessao();
         if (carregador is not null)
         {
-            carregador.Status = StatusCarregador.Disponivel;
             carregador.UsuarioAtualNome = null;
             carregador.SessaoAtualId = null;
             carregador.PrevisaoTerminoUso = null;
+            // Preserva uma manutenção sinalizada pelo admin enquanto o veículo ainda estava conectado
+            // — só volta a Disponível se ninguém colocou o carregador fora de operação nesse meio-tempo.
+            if (carregador.Status is not (StatusCarregador.Manutencao or StatusCarregador.Indisponivel))
+                carregador.Status = StatusCarregador.Disponivel;
         }
 
         sessao.VeiculoRetirado = true;
         if (sessao.ValorOcupacaoAcumulado > 0)
         {
+            var cobranca = new Transacao
+            {
+                Id = $"t-{Guid.NewGuid().ToString()[..8]}",
+                Data = DateTime.Now,
+                EstacaoNome = sessao.EstacaoNome,
+                CarregadorCodigo = sessao.CarregadorCodigo,
+                EnergiaKwh = 0,
+                DuracaoMinutos = (int)Math.Ceiling(sessao.PermanenciaSegundosSimulados / 60.0),
+                Valor = sessao.ValorOcupacaoAcumulado,
+                FormaPagamento = sessao.FormaPagamento,
+                Status = StatusPagamento.Aprovado,
+                ComprovanteId = $"CMP-{_rng.Next(1000, 9999)}",
+            };
+            Data.Transacoes.Insert(0, cobranca);
+
             AddNotificacao(Icons.Material.Filled.CheckCircle, "Veículo retirado",
                 $"Cobrança de permanência: {Format2(sessao.ValorOcupacaoAcumulado)}.");
         }
@@ -202,8 +227,16 @@ public class AppStateService : IDisposable
         _ => f.ToString(),
     };
 
-    public async Task AbrirPortaoAsync(Estacao estacao, bool entrada = true)
+    /// <summary>Retorna false sem abrir nada quando o acesso está bloqueado pelo admin — chame antes de exibir o botão de abrir como se fosse funcionar.</summary>
+    public async Task<bool> AbrirPortaoAsync(Estacao estacao, bool entrada = true, string motivo = "Abertura pelo aplicativo")
     {
+        if (estacao.AcessoBloqueado)
+        {
+            AddNotificacao(Icons.Material.Filled.Block, "Acesso bloqueado",
+                $"O acesso a {estacao.Nome} está bloqueado no momento. Fale com o suporte.");
+            return false;
+        }
+
         void SetStatus(StatusPortao s)
         {
             if (entrada) estacao.StatusPortaoEntrada = s; else estacao.StatusPortaoSaida = s;
@@ -213,14 +246,25 @@ public class AppStateService : IDisposable
         SetStatus(StatusPortao.Abrindo);
         await Task.Delay(1200);
         SetStatus(StatusPortao.Aberto);
-        estacao.PortaoAbertoDesde = DateTime.Now;
+        if (entrada) estacao.PortaoEntradaAbertoDesde = DateTime.Now; else estacao.PortaoSaidaAbertoDesde = DateTime.Now;
+
+        Data.AcessosPortao.Insert(0, new AcessoPortao
+        {
+            Id = $"ap-{Guid.NewGuid().ToString()[..8]}",
+            DataHora = DateTime.Now,
+            UsuarioNome = Data.UsuarioAtual.Nome,
+            Portao = entrada ? "Entrada" : "Saída",
+            Motivo = motivo,
+        });
+
         AddNotificacao(Icons.Material.Filled.SensorDoor, entrada ? "Portão de entrada aberto" : "Portão de saída aberto", estacao.Nome);
+        return true;
     }
 
     public void FecharPortao(Estacao estacao, bool entrada = true)
     {
-        if (entrada) estacao.StatusPortaoEntrada = StatusPortao.Fechado; else estacao.StatusPortaoSaida = StatusPortao.Fechado;
-        estacao.PortaoAbertoDesde = null;
+        if (entrada) { estacao.StatusPortaoEntrada = StatusPortao.Fechado; estacao.PortaoEntradaAbertoDesde = null; }
+        else { estacao.StatusPortaoSaida = StatusPortao.Fechado; estacao.PortaoSaidaAbertoDesde = null; }
         OnChange?.Invoke();
     }
 
