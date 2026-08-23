@@ -1,0 +1,70 @@
+@page "/carregador/{id}"
+@inject AppStateService State
+@inject ISnackbar Snackbar
+
+@if (Carregador is null)
+{
+    <MudAlert Severity="Severity.Warning" Class="mt-4">Carregador não encontrado.</MudAlert>
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-1">@Carregador.Codigo</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@Estacao?.Nome</MudText>
+
+    <MudCard Elevation="2" Class="mb-4">
+        <MudCardContent Class="pa-4">
+            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                <StatusCarregadorChip Status="Carregador.Status" />
+                @if (Carregador.TemperaturaC is not null)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        <MudIcon Icon="@Icons.Material.Filled.Thermostat" Size="Size.Small" style="vertical-align:middle;" /> @Carregador.TemperaturaC °C
+                    </MudText>
+                }
+            </MudStack>
+
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.body1"><MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Primary" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Potência máxima: <b>@Carregador.PotenciaMaximaKw.ToString("0") kW</b> (@Carregador.Corrente)</MudText>
+                <MudText Typo="Typo.body1"><MudIcon Icon="@Format.ConectorIcone(Carregador.Conector)" Color="Color.Primary" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Conector: <b>@Carregador.Conector</b></MudText>
+                <MudText Typo="Typo.body1"><MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Primary" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Preço: <b>@Format.Moeda(Carregador.PrecoPorKwh)/kWh</b></MudText>
+                <MudText Typo="Typo.body1"><MudIcon Icon="@Icons.Material.Filled.LocalParking" Color="Color.Primary" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Taxa de ocupação: <b>@Format.Moeda(Carregador.TaxaOcupacaoPorMinuto)/min</b></MudText>
+            </MudStack>
+
+            @if (Carregador.Status == StatusCarregador.EmUso)
+            {
+                <MudAlert Severity="Severity.Warning" Class="mt-4" Icon="@Icons.Material.Filled.BatteryChargingFull">
+                    🔴 EM USO @(Carregador.PrevisaoTerminoUso is { } prev ? $"— previsão de término às {Format.Hora(prev)}" : "")
+                </MudAlert>
+            }
+            else if (Carregador.Status is StatusCarregador.Manutencao or StatusCarregador.Indisponivel)
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-4">
+                    @(Carregador.Status == StatusCarregador.Manutencao
+                        ? "Este carregador está em manutenção no momento."
+                        : "Este carregador está indisponível no momento.")
+                </MudAlert>
+            }
+        </MudCardContent>
+    </MudCard>
+
+    @if (Carregador.Status == StatusCarregador.Disponivel)
+    {
+        <MudStack Spacing="2">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-2" StartIcon="@Icons.Material.Filled.CalendarMonth" Href="@($"/reserva/{Carregador.Id}")">RESERVAR</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-3" StartIcon="@Icons.Material.Filled.ElectricBolt" Href="@($"/carregador/{Carregador.Id}/iniciar")">INICIAR RECARGA</MudButton>
+        </MudStack>
+    }
+    else if (Carregador.Status == StatusCarregador.EmUso)
+    {
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-2" StartIcon="@Icons.Material.Filled.NotificationsActive" OnClick="Avisar">AVISAR QUANDO LIBERAR</MudButton>
+    }
+}
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+
+    private Carregador? Carregador => State.Data.Estacoes.SelectMany(e => e.Carregadores).FirstOrDefault(c => c.Id == Id);
+    private Estacao? Estacao => State.Data.Estacoes.FirstOrDefault(e => e.Carregadores.Any(c => c.Id == Id));
+
+    private void Avisar() => Snackbar.Add("Você será avisado quando este carregador for liberado.", Severity.Success);
+}

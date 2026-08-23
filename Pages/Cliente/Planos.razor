@@ -1,0 +1,48 @@
+@page "/planos"
+@inject AppStateService State
+@inject ISnackbar Snackbar
+
+<MudText Typo="Typo.h5" Class="mb-1">Planos</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">Economize com um plano mensal de recarga.</MudText>
+
+<MudStack Spacing="3">
+    @foreach (var p in State.Data.Planos)
+    {
+        var emBreve = p.Nome.Contains("em breve", StringComparison.OrdinalIgnoreCase);
+        <MudCard Elevation="2" Style="@(emBreve ? "opacity:.6;" : "")">
+            <MudCardContent Class="pa-4">
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-2">
+                    <MudStack Row Spacing="1" AlignItems="AlignItems.Center">
+                        <MudIcon Icon="@Icons.Material.Filled.CardMembership" Color="Color.Primary" />
+                        <MudText Typo="Typo.subtitle1"><b>@p.Nome</b></MudText>
+                    </MudStack>
+                    @if (emBreve)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Tertiary">Em breve</MudChip>
+                    }
+                </MudStack>
+                <MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-3">
+                    @(p.Mensalidade > 0 ? $"{Format.Moeda(p.Mensalidade)}/mês" : "—")
+                </MudText>
+                <MudStack Spacing="1">
+                    @foreach (var b in p.Beneficios)
+                    {
+                        <MudStack Row Spacing="2" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                            <MudText Typo="Typo.body2">@b</MudText>
+                        </MudStack>
+                    }
+                </MudStack>
+            </MudCardContent>
+            <MudCardActions Class="px-4 pb-4 pt-0">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Class="py-2" Disabled="@emBreve" OnClick="@(() => Assinar(p))">
+                    @(emBreve ? "EM BREVE" : "ASSINAR")
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+</MudStack>
+
+@code {
+    private void Assinar(Plano p) => Snackbar.Add($"Assinatura do {p.Nome} simulada — sem cobrança real neste protótipo.", Severity.Info);
+}

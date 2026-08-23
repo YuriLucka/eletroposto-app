@@ -1,0 +1,80 @@
+@page "/carregador/{id}/iniciar"
+@inject AppStateService State
+@inject NavigationManager Nav
+
+@if (Carregador is null)
+{
+    <MudAlert Severity="Severity.Warning" Class="mt-4">Carregador não encontrado.</MudAlert>
+}
+else if (Carregador.Status != StatusCarregador.Disponivel)
+{
+    <MudAlert Severity="Severity.Warning" Class="mt-4">Este carregador não está disponível para iniciar uma recarga agora.</MudAlert>
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-1">Iniciar recarga</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@Estacao?.Nome · @Carregador.Codigo</MudText>
+
+    <MudCard Elevation="2" Class="mb-4">
+        <MudCardContent Class="pa-4">
+            <MudStack Spacing="2">
+                <MudText Typo="Typo.body1"><MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Primary" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Potência máxima: <b>@Carregador.PotenciaMaximaKw.ToString("0") kW</b></MudText>
+                <MudText Typo="Typo.body1"><MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Primary" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Preço: <b>@Format.Moeda(Carregador.PrecoPorKwh)/kWh</b></MudText>
+                <MudText Typo="Typo.body1"><MudIcon Icon="@Icons.Material.Filled.LocalParking" Color="Color.Primary" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Taxa após término: <b>@Format.Moeda(Carregador.TaxaOcupacaoPorMinuto)/min</b></MudText>
+            </MudStack>
+        </MudCardContent>
+    </MudCard>
+
+    @if (Veiculos.Count > 1)
+    {
+        <MudSelect T="string" Label="Veículo" @bind-Value="_veiculoId" Class="mb-4" AdornmentIcon="@Icons.Material.Filled.DirectionsCar" Adornment="Adornment.Start">
+            @foreach (var v in Veiculos)
+            {
+                <MudSelectItem T="string" Value="@v.Id">
+                    <MudIcon Icon="@Format.VeiculoIcone(v.Tipo)" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />@v.Marca @v.Modelo @(v.Principal ? "(principal)" : "")
+                </MudSelectItem>
+            }
+        </MudSelect>
+    }
+
+    <MudSelect T="FormaPagamento" Label="Forma de pagamento" @bind-Value="_formaPagamento" Class="mb-4"
+               AdornmentIcon="@Format.FormaPagamentoIcone(_formaPagamento)" Adornment="Adornment.Start">
+        <MudSelectItem T="FormaPagamento" Value="FormaPagamento.Pix">
+            <MudIcon Icon="@Icons.Material.Filled.QrCode2" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Pix
+        </MudSelectItem>
+        <MudSelectItem T="FormaPagamento" Value="FormaPagamento.CartaoCredito">
+            <MudIcon Icon="@Icons.Material.Filled.CreditCard" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Cartão de crédito
+        </MudSelectItem>
+        <MudSelectItem T="FormaPagamento" Value="FormaPagamento.CarteiraPrepaga">
+            <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Carteira (saldo @Format.Moeda(State.Data.UsuarioAtual.SaldoCarteira))
+        </MudSelectItem>
+    </MudSelect>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-3" StartIcon="@Icons.Material.Filled.ElectricBolt"
+               OnClick="Iniciar" Disabled="@(string.IsNullOrEmpty(_veiculoId))">
+        INICIAR RECARGA
+    </MudButton>
+}
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+
+    private FormaPagamento _formaPagamento = FormaPagamento.Pix;
+    private string _veiculoId = "";
+
+    private Carregador? Carregador => State.Data.Estacoes.SelectMany(e => e.Carregadores).FirstOrDefault(c => c.Id == Id);
+    private Estacao? Estacao => State.Data.Estacoes.FirstOrDefault(e => e.Carregadores.Any(c => c.Id == Id));
+    private List<Veiculo> Veiculos => State.Data.UsuarioAtual.Veiculos;
+
+    protected override void OnInitialized()
+    {
+        _veiculoId = (Veiculos.FirstOrDefault(v => v.Principal) ?? Veiculos.FirstOrDefault())?.Id ?? "";
+    }
+
+    private void Iniciar()
+    {
+        if (Carregador is null || string.IsNullOrEmpty(_veiculoId)) return;
+        var sessao = State.IniciarRecarga(Carregador.Id, _veiculoId, _formaPagamento);
+        Nav.NavigateTo($"/recarga/{sessao.Id}");
+    }
+}
