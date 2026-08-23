@@ -62,11 +62,43 @@ public class AppStateService : IDisposable
 
             mudou = true;
         }
+        else if (SessaoAtiva is { Status: StatusSessao.Finalizada, VeiculoRetirado: false } encerrada)
+        {
+            const double AceleracaoDemo = 6.0; // mesmo fator usado na simulação de carga
+            const double ToleranciaSegundos = 6.0; // poucos segundos de tolerância antes de avisar/cobrar
+
+            encerrada.PermanenciaSegundosSimulados += (_timer.Interval / 1000.0) * AceleracaoDemo;
+
+            if (encerrada.PermanenciaSegundosSimulados > ToleranciaSegundos)
+            {
+                var minutosCobraveis = (encerrada.PermanenciaSegundosSimulados - ToleranciaSegundos) / 60.0;
+                encerrada.ValorOcupacaoAcumulado = Math.Round((decimal)minutosCobraveis * encerrada.TaxaOcupacaoPorMinuto, 2);
+
+                if (!_permanenciaAvisada)
+                {
+                    _permanenciaAvisada = true;
+                    AddNotificacao(Icons.Material.Filled.DirectionsCarFilled, "Veículo permanece conectado",
+                        $"Retire seu veículo do carregador {encerrada.CarregadorCodigo} para evitar cobrança de permanência.");
+                }
+                else if (!_taxaOcupacaoAvisada)
+                {
+                    _taxaOcupacaoAvisada = true;
+                    AddNotificacao(Icons.Material.Filled.LocalParking, "Taxa de ocupação iniciada",
+                        $"{Format2(encerrada.TaxaOcupacaoPorMinuto)}/min está sendo cobrado enquanto o veículo permanecer conectado.");
+                }
+            }
+
+            mudou = true;
+        }
 
         if (mudou) OnChange?.Invoke();
     }
 
+    private static string Format2(decimal v) => $"R$ {v:N2}";
+
     private bool _limiteNotificado;
+    private bool _permanenciaAvisada;
+    private bool _taxaOcupacaoAvisada;
 
     public SessaoRecarga IniciarRecarga(string carregadorId, string veiculoId, FormaPagamento formaPagamento)
     {
@@ -78,6 +110,8 @@ public class AppStateService : IDisposable
         carregador.UsuarioAtualNome = Data.UsuarioAtual.Nome;
 
         _limiteNotificado = false;
+        _permanenciaAvisada = false;
+        _taxaOcupacaoAvisada = false;
         SessaoAtiva = new SessaoRecarga
         {
             Id = $"s-{Guid.NewGuid().ToString()[..8]}",
@@ -109,15 +143,8 @@ public class AppStateService : IDisposable
         var sessao = SessaoAtiva;
         sessao.Status = StatusSessao.Finalizada;
         sessao.Fim = DateTime.Now;
-
-        var carregador = CarregadorDaSessao();
-        if (carregador is not null)
-        {
-            carregador.Status = StatusCarregador.Disponivel;
-            carregador.UsuarioAtualNome = null;
-            carregador.SessaoAtualId = null;
-            carregador.PrevisaoTerminoUso = null;
-        }
+        // O carregador só é liberado quando o cliente confirma a retirada do veículo
+        // (ver ConfirmarRetiradaVeiculo) — até lá, permanece ocupado e pode gerar taxa de permanência.
 
         var transacao = new Transacao
         {
@@ -137,9 +164,32 @@ public class AppStateService : IDisposable
 
         AddNotificacao(Icons.Material.Filled.CheckCircle, "Pagamento aprovado", $"Recarga finalizada — R$ {transacao.Valor:N2} via {DescreverFormaPagamento(transacao.FormaPagamento)}.");
 
-        SessaoAtiva = null;
         OnChange?.Invoke();
         return transacao;
+    }
+
+    public void ConfirmarRetiradaVeiculo()
+    {
+        if (SessaoAtiva is not { Status: StatusSessao.Finalizada } sessao) return;
+
+        var carregador = CarregadorDaSessao();
+        if (carregador is not null)
+        {
+            carregador.Status = StatusCarregador.Disponivel;
+            carregador.UsuarioAtualNome = null;
+            carregador.SessaoAtualId = null;
+            carregador.PrevisaoTerminoUso = null;
+        }
+
+        sessao.VeiculoRetirado = true;
+        if (sessao.ValorOcupacaoAcumulado > 0)
+        {
+            AddNotificacao(Icons.Material.Filled.CheckCircle, "Veículo retirado",
+                $"Cobrança de permanência: {Format2(sessao.ValorOcupacaoAcumulado)}.");
+        }
+
+        SessaoAtiva = null;
+        OnChange?.Invoke();
     }
 
     public static string DescreverFormaPagamento(FormaPagamento f) => f switch

@@ -2,7 +2,7 @@
 @inject AppStateService State
 @inject NavigationManager Nav
 
-@if (State.SessaoAtiva is null)
+@if (State.SessaoAtiva is not { Status: StatusSessao.Carregando })
 {
     <MudAlert Severity="Severity.Info" Class="mt-4">Nenhuma recarga ativa para finalizar.</MudAlert>
     <MudButton Class="mt-4 py-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth Href="/mapa">Encontrar carregador</MudButton>

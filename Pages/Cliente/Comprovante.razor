@@ -1,6 +1,7 @@
 @page "/comprovante/{id}"
 @inject AppStateService State
 @inject ISnackbar Snackbar
+@implements IDisposable
 
 @if (Transacao is null)
 {
@@ -10,6 +11,28 @@ else
 {
     <MudText Typo="Typo.h5" Class="mb-1">Comprovante</MudText>
     <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@Format.DataHora(Transacao.Data)</MudText>
+
+    @if (SessaoPendente is { } pendente)
+    {
+        <MudAlert Severity="@(pendente.ValorOcupacaoAcumulado > 0 ? Severity.Warning : Severity.Info)"
+                  Icon="@Icons.Material.Filled.DirectionsCarFilled" Class="mb-4">
+            <MudText Typo="Typo.body2">
+                Veículo ainda conectado ao carregador <b>@pendente.CarregadorCodigo</b>.
+                @if (pendente.ValorOcupacaoAcumulado > 0)
+                {
+                    <text> Taxa de permanência acumulada: <b>@Format.Moeda(pendente.ValorOcupacaoAcumulado)</b> (@Format.Moeda(pendente.TaxaOcupacaoPorMinuto)/min).</text>
+                }
+                else
+                {
+                    <text> Retire o veículo em breve para evitar cobrança de permanência.</text>
+                }
+            </MudText>
+        </MudAlert>
+        <MudButton Variant="Variant.Filled" Color="Color.Warning" FullWidth Class="mb-4 py-2"
+                   StartIcon="@Icons.Material.Filled.DirectionsCar" OnClick="ConfirmarRetirada">
+            CONFIRMAR RETIRADA DO VEÍCULO
+        </MudButton>
+    }
 
     <MudCard Elevation="2" Class="mb-4">
         <MudCardContent Class="pa-4">
@@ -66,5 +89,20 @@ else
 
     private Transacao? Transacao => State.Data.Transacoes.FirstOrDefault(t => t.Id == Id);
 
+    private SessaoRecarga? SessaoPendente =>
+        State.SessaoAtiva is { Status: StatusSessao.Finalizada, VeiculoRetirado: false } s
+        && Transacao is not null && s.CarregadorCodigo == Transacao.CarregadorCodigo
+            ? s : null;
+
     private void EmBreve() => Snackbar.Add("Em breve.", Severity.Info);
+
+    private void ConfirmarRetirada()
+    {
+        State.ConfirmarRetiradaVeiculo();
+        Snackbar.Add("Veículo retirado. Carregador liberado.", Severity.Success);
+    }
+
+    protected override void OnInitialized() => State.OnChange += Rerender;
+    private void Rerender() => InvokeAsync(StateHasChanged);
+    public void Dispose() => State.OnChange -= Rerender;
 }

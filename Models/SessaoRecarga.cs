@@ -22,6 +22,11 @@ public class SessaoRecarga
     public decimal TaxaOcupacaoPorMinuto { get; set; }
     public decimal ValorAcumulado { get; set; }
     public FormaPagamento FormaPagamento { get; set; } = FormaPagamento.Pix;
+
+    // Permanência pós-recarga: o carregador só é liberado quando o cliente confirma a retirada.
+    public bool VeiculoRetirado { get; set; }
+    public double PermanenciaSegundosSimulados { get; set; }
+    public decimal ValorOcupacaoAcumulado { get; set; }
 }
 
 public class Transacao
