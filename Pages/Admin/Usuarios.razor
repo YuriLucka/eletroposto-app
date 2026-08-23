@@ -1,0 +1,149 @@
+@page "/admin/usuarios"
+@layout AdminLayout
+@inject AppStateService State
+@inject ISnackbar Snackbar
+
+<PageHeader Icon="@Icons.Material.Filled.Group" Title="Usuários &amp; acessos"
+            Subtitle="Equipe com acesso ao painel administrativo e seus níveis de permissão.">
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd"
+               OnClick="@(() => _mostrarFormulario = !_mostrarFormulario)">Adicionar usuário</MudButton>
+</PageHeader>
+
+@if (_mostrarFormulario)
+{
+    <MudPaper Class="pa-4 mb-4" Elevation="2">
+        <MudText Typo="Typo.h6" Class="mb-3">Novo usuário administrativo</MudText>
+        <MudGrid>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="_novoNome" Label="Nome completo" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudTextField @bind-Value="_novoEmail" Label="E-mail" Variant="Variant.Outlined" Margin="Margin.Dense" InputType="InputType.Email" />
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudSelect T="NivelAcesso" @bind-Value="_novoNivel" Label="Nível de acesso" Variant="Variant.Outlined" Dense="true">
+                    <MudSelectItem Value="NivelAcesso.Proprietario">Proprietário</MudSelectItem>
+                    <MudSelectItem Value="NivelAcesso.Operador">Operador</MudSelectItem>
+                    <MudSelectItem Value="NivelAcesso.Financeiro">Financeiro</MudSelectItem>
+                    <MudSelectItem Value="NivelAcesso.Tecnico">Técnico</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="1" Class="d-flex align-center">
+                <MudTooltip Text="Salvar novo usuário">
+                    <MudIconButton Icon="@Icons.Material.Filled.Check" Color="Color.Success" Variant="Variant.Filled" OnClick="Adicionar" />
+                </MudTooltip>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+}
+
+<MudPaper Class="pa-2 mb-4" Elevation="2">
+    <MudTable Items="@State.Data.UsuariosAdmin" Dense="false" Hover="true" Striped="true">
+        <HeaderContent>
+            <MudTh>Nome</MudTh>
+            <MudTh>E-mail</MudTh>
+            <MudTh Style="width:180px;">Nível de acesso</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Nome">
+                <div class="d-flex align-center">
+                    <MudAvatar Size="Size.Small" Color="@CorNivel(context.NivelAdmin)" Class="mr-2">
+                        @(context.Nome.Length > 0 ? context.Nome[..1] : "?")
+                    </MudAvatar>
+                    @context.Nome
+                </div>
+            </MudTd>
+            <MudTd DataLabel="E-mail">@context.Email</MudTd>
+            <MudTd DataLabel="Nível de acesso">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="@CorNivel(context.NivelAdmin)" Icon="@IconeNivel(context.NivelAdmin)">
+                    @TextoNivel(context.NivelAdmin)
+                </MudChip>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+<MudPaper Class="pa-4" Elevation="2">
+    <div class="d-flex align-center mb-3">
+        <div class="admin-section-icon mr-3"><MudIcon Icon="@Icons.Material.Filled.Info" /></div>
+        <MudText Typo="Typo.h6">O que cada nível de acesso pode fazer</MudText>
+    </div>
+    <MudGrid>
+        <MudItem xs="12" sm="6" md="3">
+            <div class="d-flex align-start">
+                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Icon="@Icons.Material.Filled.VerifiedUser" Class="mr-2 mt-1">Proprietário</MudChip>
+            </div>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary d-block mt-2">Acesso total ao painel: operações, preços, usuários e relatórios financeiros.</MudText>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Engineering">Operador</MudChip>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary d-block mt-2">Gerencia carregadores, sessões, portões e reservas no dia a dia.</MudText>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.AccountBalanceWallet">Financeiro</MudChip>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary d-block mt-2">Acompanha pagamentos, faturamento e relatórios financeiros.</MudText>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Build">Técnico</MudChip>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary d-block mt-2">Executa manutenção, diagnósticos e reinicialização de equipamentos.</MudText>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    private bool _mostrarFormulario;
+    private string _novoNome = "";
+    private string _novoEmail = "";
+    private NivelAcesso _novoNivel = NivelAcesso.Operador;
+
+    private static Color CorNivel(NivelAcesso? nivel) => nivel switch
+    {
+        NivelAcesso.Proprietario => Color.Primary,
+        NivelAcesso.Operador => Color.Info,
+        NivelAcesso.Financeiro => Color.Warning,
+        NivelAcesso.Tecnico => Color.Default,
+        _ => Color.Default,
+    };
+
+    private static string TextoNivel(NivelAcesso? nivel) => nivel switch
+    {
+        NivelAcesso.Proprietario => "Proprietário",
+        NivelAcesso.Operador => "Operador",
+        NivelAcesso.Financeiro => "Financeiro",
+        NivelAcesso.Tecnico => "Técnico",
+        _ => "—",
+    };
+
+    private static string IconeNivel(NivelAcesso? nivel) => nivel switch
+    {
+        NivelAcesso.Proprietario => Icons.Material.Filled.VerifiedUser,
+        NivelAcesso.Operador => Icons.Material.Filled.Engineering,
+        NivelAcesso.Financeiro => Icons.Material.Filled.AccountBalanceWallet,
+        NivelAcesso.Tecnico => Icons.Material.Filled.Build,
+        _ => Icons.Material.Filled.Person,
+    };
+
+    private void Adicionar()
+    {
+        if (string.IsNullOrWhiteSpace(_novoNome) || string.IsNullOrWhiteSpace(_novoEmail))
+        {
+            Snackbar.Add("Informe nome e e-mail do novo usuário.", Severity.Warning);
+            return;
+        }
+
+        State.Data.UsuariosAdmin.Add(new Usuario
+        {
+            Id = $"a-{Guid.NewGuid().ToString()[..8]}",
+            Nome = _novoNome,
+            Email = _novoEmail,
+            NivelAdmin = _novoNivel,
+        });
+        State.NotifyStateChanged();
+        Snackbar.Add($"Usuário {_novoNome} adicionado com nível {TextoNivel(_novoNivel)}.", Severity.Success);
+
+        _novoNome = "";
+        _novoEmail = "";
+        _novoNivel = NivelAcesso.Operador;
+        _mostrarFormulario = false;
+    }
+}

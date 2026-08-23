@@ -1,0 +1,35 @@
+<div class="d-flex align-center">
+    <MudIcon Icon="@Icone" Color="@Cor" Class="mr-1" />
+    <MudText Typo="Typo.body2">@Texto</MudText>
+</div>
+
+@code {
+    [Parameter] public StatusPortao Status { get; set; }
+
+    private string Texto => Status switch
+    {
+        StatusPortao.Fechado => "🟢 Fechado",
+        StatusPortao.Abrindo => "🟡 Abrindo…",
+        StatusPortao.Aberto => "🔵 Aberto",
+        StatusPortao.Falha => "🔴 Falha",
+        _ => Status.ToString(),
+    };
+
+    private Color Cor => Status switch
+    {
+        StatusPortao.Fechado => Color.Success,
+        StatusPortao.Abrindo => Color.Warning,
+        StatusPortao.Aberto => Color.Info,
+        StatusPortao.Falha => Color.Error,
+        _ => Color.Default,
+    };
+
+    private string Icone => Status switch
+    {
+        StatusPortao.Fechado => Icons.Material.Filled.Lock,
+        StatusPortao.Abrindo => Icons.Material.Filled.LockOpen,
+        StatusPortao.Aberto => Icons.Material.Filled.MeetingRoom,
+        StatusPortao.Falha => Icons.Material.Filled.ErrorOutline,
+        _ => Icons.Material.Filled.SensorDoor,
+    };
+}
