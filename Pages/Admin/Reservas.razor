@@ -1,0 +1,111 @@
+@page "/admin/reservas"
+@layout AdminLayout
+@inject AppStateService State
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageHeader Icon="@Icons.Material.Filled.CalendarMonth" Title="Reservas"
+            Subtitle="Todas as reservas de carregadores, confirmadas, em andamento e históricas." />
+
+<MudPaper Class="pa-2" Elevation="2">
+    <MudTable Items="@State.Data.Reservas.OrderByDescending(r => r.DataHora)" Dense="false" Hover="true" Striped="true">
+        <HeaderContent>
+            <MudTh>Cliente</MudTh>
+            <MudTh>Estação</MudTh>
+            <MudTh>Carregador</MudTh>
+            <MudTh>Data/Hora</MudTh>
+            <MudTh Style="width:100px;">Duração</MudTh>
+            <MudTh Style="width:140px;">Status</MudTh>
+            <MudTh Style="width:110px;">Ações</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Cliente">
+                <div class="d-flex align-center">
+                    <MudAvatar Size="Size.Small" Color="Color.Primary" Class="mr-2">@context.ClienteNome[..1]</MudAvatar>
+                    @context.ClienteNome
+                </div>
+            </MudTd>
+            <MudTd DataLabel="Estação">@context.EstacaoNome</MudTd>
+            <MudTd DataLabel="Carregador">@context.CarregadorCodigo</MudTd>
+            <MudTd DataLabel="Data/Hora">@context.DataHora.ToString("dd/MM/yyyy HH:mm")</MudTd>
+            <MudTd DataLabel="Duração">@context.DuracaoMinutos min</MudTd>
+            <MudTd DataLabel="Status">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="@CorStatus(context.Status)" Icon="@IconeStatus(context.Status)">@TextoStatus(context.Status)</MudChip>
+            </MudTd>
+            <MudTd DataLabel="Ações">
+                @if (context.Status == StatusReserva.Confirmada)
+                {
+                    <MudTooltip Text="Marcar como no-show">
+                        <MudIconButton Icon="@Icons.Material.Filled.PersonOff" Size="Size.Small" Color="Color.Warning"
+                                       OnClick="@(() => MarcarNoShow(context))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Cancelar reserva">
+                        <MudIconButton Icon="@Icons.Material.Filled.Cancel" Size="Size.Small" Color="Color.Error"
+                                       OnClick="@(() => Cancelar(context))" />
+                    </MudTooltip>
+                }
+                else
+                {
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">—</MudText>
+                }
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>Nenhuma reserva registrada.</MudText>
+        </NoRecordsContent>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new[] { 5, 10, 25 }" RowsPerPageString="Linhas por página" InfoFormat="{first_item}-{last_item} de {all_items}" />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    protected override void OnInitialized() => State.OnChange += HandleChange;
+    private void HandleChange() => InvokeAsync(StateHasChanged);
+
+    private Color CorStatus(StatusReserva s) => s switch
+    {
+        StatusReserva.Confirmada => Color.Info,
+        StatusReserva.EmAndamento => Color.Warning,
+        StatusReserva.Concluida => Color.Success,
+        StatusReserva.Cancelada => Color.Default,
+        StatusReserva.NoShow => Color.Error,
+        _ => Color.Default,
+    };
+
+    private string TextoStatus(StatusReserva s) => s switch
+    {
+        StatusReserva.Confirmada => "Confirmada",
+        StatusReserva.EmAndamento => "Em andamento",
+        StatusReserva.Concluida => "Concluída",
+        StatusReserva.Cancelada => "Cancelada",
+        StatusReserva.NoShow => "No-show",
+        _ => s.ToString(),
+    };
+
+    private string IconeStatus(StatusReserva s) => s switch
+    {
+        StatusReserva.Confirmada => Icons.Material.Filled.EventAvailable,
+        StatusReserva.EmAndamento => Icons.Material.Filled.HourglassTop,
+        StatusReserva.Concluida => Icons.Material.Filled.CheckCircle,
+        StatusReserva.Cancelada => Icons.Material.Filled.EventBusy,
+        StatusReserva.NoShow => Icons.Material.Filled.PersonOff,
+        _ => Icons.Material.Filled.Event,
+    };
+
+    private void MarcarNoShow(Reserva r)
+    {
+        r.Status = StatusReserva.NoShow;
+        State.NotifyStateChanged();
+        Snackbar.Add($"Reserva de {r.ClienteNome} marcada como no-show.", Severity.Warning);
+    }
+
+    private void Cancelar(Reserva r)
+    {
+        r.Status = StatusReserva.Cancelada;
+        State.NotifyStateChanged();
+        Snackbar.Add($"Reserva de {r.ClienteNome} cancelada.", Severity.Info);
+    }
+
+    public void Dispose() => State.OnChange -= HandleChange;
+}

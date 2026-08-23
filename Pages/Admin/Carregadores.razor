@@ -1,0 +1,170 @@
+@page "/admin/carregadores"
+@layout AdminLayout
+@inject AppStateService State
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageHeader Icon="@Icons.Material.Filled.EvStation" Title="Carregadores"
+            Subtitle="Monitoramento e controle remoto de todos os carregadores instalados." />
+
+<MudGrid>
+    @foreach (var (estacao, carregador) in _carregadores)
+    {
+        var ehSessaoAoVivo = State.SessaoAtiva is not null && State.SessaoAtiva.CarregadorId == carregador.Id;
+        <MudItem xs="12" sm="6" lg="4">
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="@(carregador.Corrente == TipoCorrente.DC ? Color.Primary : Color.Secondary)">
+                            <MudIcon Icon="@Icons.Material.Filled.EvStation" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.subtitle1">@carregador.Codigo</MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">@estacao.Nome</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <StatusCarregadorChip Status="carregador.Status" />
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudSimpleTable Dense="true" Elevation="0">
+                        <tbody>
+                            <tr><td>Corrente</td><td class="text-right">@carregador.Corrente</td></tr>
+                            <tr><td>Conector</td><td class="text-right">@carregador.Conector</td></tr>
+                            <tr><td>Potência máxima</td><td class="text-right">@carregador.PotenciaMaximaKw.ToString("N0") kW</td></tr>
+                            <tr><td>Preço / kWh</td><td class="text-right">R$ @carregador.PrecoPorKwh.ToString("N2")</td></tr>
+                            <tr>
+                                <td>Temperatura</td>
+                                <td class="text-right">
+                                    @if (carregador.TemperaturaC is { } temp)
+                                    {
+                                        <MudText Typo="Typo.body2" Color="@(temp >= 40 ? Color.Error : Color.Default)" Style="display:inline">@temp.ToString("N1") °C</MudText>
+                                    }
+                                    else
+                                    {
+                                        <span>—</span>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+
+                    @if (carregador.Status == StatusCarregador.Manutencao)
+                    {
+                        <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2" Icon="@Icons.Material.Filled.Build">
+                            🟡 Manutenção programada
+                        </MudAlert>
+                    }
+
+                    @if (ehSessaoAoVivo && State.SessaoAtiva is { } sessao)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2" Icon="@Icons.Material.Filled.BatteryChargingFull">
+                            <b>Sessão ao vivo</b> — cliente app
+                        </MudAlert>
+                        <MudSimpleTable Dense="true" Elevation="0" Class="mt-1">
+                            <tbody>
+                                <tr><td>Usuário</td><td class="text-right">@carregador.UsuarioAtualNome</td></tr>
+                                <tr><td>kWh atual</td><td class="text-right">@sessao.EnergiaAdicionadaKwh.ToString("N2") kWh</td></tr>
+                                <tr><td>Potência atual</td><td class="text-right">@sessao.PotenciaAtualKw.ToString("N1") kW</td></tr>
+                                <tr><td>Valor acumulado</td><td class="text-right">R$ @sessao.ValorAcumulado.ToString("N2")</td></tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    }
+                    else if (carregador.Status == StatusCarregador.EmUso)
+                    {
+                        <MudText Typo="Typo.caption" Class="mt-2 d-block">
+                            Usuário: @(carregador.UsuarioAtualNome ?? "—")
+                            @if (carregador.PrevisaoTerminoUso is { } previsao)
+                            {
+                                <text> · término previsto @previsao.ToString("HH:mm")</text>
+                            }
+                        </MudText>
+                    }
+                </MudCardContent>
+                <MudCardActions Class="d-flex align-center justify-end gap-1 px-3 pb-3">
+                    @if (carregador.Status is StatusCarregador.Manutencao or StatusCarregador.Indisponivel)
+                    {
+                        <MudTooltip Text="Reativar carregador (voltar a disponível)">
+                            <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small"
+                                           OnClick="@(() => Reativar(carregador))" />
+                        </MudTooltip>
+                    }
+                    else
+                    {
+                        <MudTooltip Text="Colocar em manutenção">
+                            <MudIconButton Icon="@Icons.Material.Filled.Build" Color="Color.Warning" Size="Size.Small"
+                                           OnClick="@(() => ColocarEmManutencao(carregador))" />
+                        </MudTooltip>
+                    }
+
+                    <MudTooltip Text="Enviar comando de reinício">
+                        <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" Color="Color.Default" Size="Size.Small"
+                                       OnClick="@(() => Reiniciar(carregador))" />
+                    </MudTooltip>
+
+                    <MudTooltip Text="@(ehSessaoAoVivo ? "Esta sessão está sendo controlada pelo cliente no app." : "Interromper sessão em andamento")">
+                        <MudIconButton Icon="@Icons.Material.Filled.Stop" Color="Color.Error" Size="Size.Small"
+                                       Disabled="@(carregador.Status != StatusCarregador.EmUso || ehSessaoAoVivo)"
+                                       OnClick="@(() => InterromperSessao(carregador))" />
+                    </MudTooltip>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    private List<(Estacao Estacao, Carregador Carregador)> _carregadores = new();
+
+    protected override void OnInitialized()
+    {
+        State.OnChange += HandleChange;
+        Carregar();
+    }
+
+    private void Carregar()
+    {
+        _carregadores = State.Data.Estacoes
+            .SelectMany(e => e.Carregadores.Select(c => (Estacao: e, Carregador: c)))
+            .ToList();
+    }
+
+    private void HandleChange()
+    {
+        Carregar();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ColocarEmManutencao(Carregador c)
+    {
+        c.Status = StatusCarregador.Manutencao;
+        State.NotifyStateChanged();
+        State.AddNotificacao("🛠️", "Carregador em manutenção", $"O carregador {c.Codigo} foi colocado em manutenção pelo painel administrativo.");
+        Snackbar.Add($"Carregador {c.Codigo} colocado em manutenção.", Severity.Warning);
+    }
+
+    private void Reativar(Carregador c)
+    {
+        c.Status = StatusCarregador.Disponivel;
+        State.NotifyStateChanged();
+        Snackbar.Add($"Carregador {c.Codigo} reativado e disponível.", Severity.Success);
+    }
+
+    private void Reiniciar(Carregador c)
+    {
+        Snackbar.Add($"Comando de reinício enviado ao carregador {c.Codigo}.", Severity.Info);
+    }
+
+    private void InterromperSessao(Carregador c)
+    {
+        c.Status = StatusCarregador.Disponivel;
+        c.UsuarioAtualNome = null;
+        c.PrevisaoTerminoUso = null;
+        c.SessaoAtualId = null;
+        State.NotifyStateChanged();
+        Snackbar.Add($"Sessão interrompida no carregador {c.Codigo}.", Severity.Warning);
+    }
+
+    public void Dispose() => State.OnChange -= HandleChange;
+}

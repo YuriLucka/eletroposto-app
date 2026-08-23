@@ -1,0 +1,21 @@
+<div class="d-flex align-center mb-4">
+    <div class="admin-section-icon mr-3">
+        <MudIcon Icon="@Icon" />
+    </div>
+    <div>
+        <MudText Typo="Typo.h5">@Title</MudText>
+        <MudText Typo="Typo.body2" Class="mud-text-secondary">@Subtitle</MudText>
+    </div>
+    @if (ChildContent is not null)
+    {
+        <MudSpacer />
+        @ChildContent
+    }
+</div>
+
+@code {
+    [Parameter] public string Icon { get; set; } = MudBlazor.Icons.Material.Filled.Info;
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Subtitle { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

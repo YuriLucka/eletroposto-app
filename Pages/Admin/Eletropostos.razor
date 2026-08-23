@@ -1,0 +1,100 @@
+@page "/admin/eletropostos"
+@layout AdminLayout
+@inject AppStateService State
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageHeader Icon="@Icons.Material.Filled.LocationCity" Title="Eletropostos"
+            Subtitle="Rede de eletropostos operados — expansão multi-unidade." />
+
+<MudGrid>
+    @foreach (var estacao in State.Data.Estacoes)
+    {
+        var desativado = _desativado.TryGetValue(estacao.Id, out var d) && d;
+        <MudItem xs="12" sm="6" lg="4">
+            <MudCard Elevation="3">
+                <div class="eletroposto-banner @(desativado ? "is-offline" : "")">
+                    <div>
+                        <MudText Typo="Typo.subtitle1" Style="color:#fff;font-weight:700;">@estacao.Nome</MudText>
+                        <MudText Typo="Typo.caption" Style="color:rgba(255,255,255,0.85);">@estacao.Cidade</MudText>
+                    </div>
+                    <MudIcon Icon="@Icons.Material.Filled.EvStation" Style="color:#fff;font-size:2.5rem;" />
+                </div>
+                <MudCardContent>
+                    <div class="d-flex align-center mb-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Place" Size="Size.Small" Class="mr-2 mud-text-secondary" />
+                        <MudText Typo="Typo.body2">@estacao.Endereco</MudText>
+                    </div>
+                    <MudSimpleTable Dense="true" Elevation="0">
+                        <tbody>
+                            <tr><td>Carregadores</td><td class="text-right">@estacao.Total</td></tr>
+                            <tr><td>Disponíveis agora</td><td class="text-right">@estacao.Disponiveis</td></tr>
+                            <tr>
+                                <td>Status geral</td>
+                                <td class="text-right">
+                                    @if (desativado)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Icon="@Icons.Material.Filled.PowerOff">Desativado</MudChip>
+                                    }
+                                    else if (estacao.Disponiveis > 0)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle">Operando</MudChip>
+                                    }
+                                    else
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Warning">Em breve</MudChip>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </MudSimpleTable>
+                </MudCardContent>
+                <MudCardActions Class="px-4 pb-3 d-flex align-center justify-space-between">
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Distância: @((estacao.DistanciaMetros / 1000.0).ToString("N1")) km</MudText>
+                    <MudSwitch T="bool" Value="!desativado" ValueChanged="@(v => AlternarAtivo(estacao, !v))" Color="Color.Success" Label="Ativo" LabelPlacement="Placement.Start" />
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    }
+
+    <MudItem xs="12" sm="6" lg="4">
+        <MudCard Elevation="0" Outlined="true" Style="height:100%;border-style:dashed;">
+            <div class="d-flex flex-column align-center justify-center pa-6" style="height:100%;min-height:280px;">
+                <MudIconButton Icon="@Icons.Material.Filled.AddCircleOutline" Size="Size.Large" Color="Color.Default" Disabled="true" />
+                <MudText Typo="Typo.subtitle1" Class="mt-2">Novo eletroposto</MudText>
+                <MudText Typo="Typo.caption" Class="mud-text-secondary text-center mt-1">
+                    Expansão planejada para São José, Florianópolis e Palhoça — cadastro de novas unidades chegará em uma próxima versão.
+                </MudText>
+            </div>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private readonly Dictionary<string, bool> _desativado = new();
+
+    protected override void OnInitialized() => State.OnChange += HandleChange;
+    private void HandleChange() => InvokeAsync(StateHasChanged);
+
+    private void AlternarAtivo(Estacao estacao, bool desativar)
+    {
+        _desativado[estacao.Id] = desativar;
+
+        foreach (var carregador in estacao.Carregadores)
+        {
+            if (desativar && carregador.Status != StatusCarregador.Manutencao)
+            {
+                carregador.Status = StatusCarregador.Indisponivel;
+            }
+            else if (!desativar && carregador.Status == StatusCarregador.Indisponivel)
+            {
+                carregador.Status = StatusCarregador.Disponivel;
+            }
+        }
+        State.NotifyStateChanged();
+        Snackbar.Add(desativar ? $"{estacao.Nome} desativado — carregadores marcados como indisponíveis." : $"{estacao.Nome} reativado.",
+            desativar ? Severity.Warning : Severity.Success);
+    }
+
+    public void Dispose() => State.OnChange -= HandleChange;
+}

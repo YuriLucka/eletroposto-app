@@ -1,0 +1,173 @@
+@page "/admin/precos"
+@layout AdminLayout
+@inject AppStateService State
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageHeader Icon="@Icons.Material.Filled.Sell" Title="Preços"
+            Subtitle="Configuração de tarifas por tipo de corrente e por carregador individual." />
+
+<MudGrid Class="mb-4">
+    @foreach (var grupo in _grupos)
+    {
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <div class="d-flex align-center mb-3">
+                    <MudAvatar Color="@(grupo.Tipo == TipoCorrente.DC ? Color.Primary : Color.Secondary)" Variant="Variant.Filled" Class="mr-3">
+                        <MudIcon Icon="@(grupo.Tipo == TipoCorrente.DC ? Icons.Material.Filled.ElectricBolt : Icons.Material.Filled.Bolt)" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.h6">Corrente @grupo.Tipo</MudText>
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary">@grupo.Quantidade carregador(es) &middot; preço médio atual: R$ @grupo.PrecoMedio.ToString("N2") / kWh</MudText>
+                    </div>
+                </div>
+                <div class="d-flex align-center gap-2">
+                    <MudNumericField T="decimal" @bind-Value="grupo.NovoPreco" Label="Novo preço por kWh (R$)" Variant="Variant.Outlined"
+                                     Min="0" Step="0.05m" Format="N2" Margin="Margin.Dense" Class="flex-grow-1" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Check"
+                               OnClick="@(() => AplicarPorTipo(grupo))">Aplicar</MudButton>
+                </div>
+            </MudPaper>
+        </MudItem>
+    }
+</MudGrid>
+
+<MudPaper Class="pa-4 mb-4" Elevation="2">
+    <div class="d-flex align-center mb-3">
+        <div class="admin-section-icon mr-3"><MudIcon Icon="@Icons.Material.Filled.Tune" /></div>
+        <MudText Typo="Typo.h6">Preços individuais por carregador</MudText>
+    </div>
+    <MudTable Items="@_linhas" Dense="false" Hover="true">
+        <HeaderContent>
+            <MudTh>Código</MudTh>
+            <MudTh>Estação</MudTh>
+            <MudTh Style="width:110px;">Tipo</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh Style="width:160px;">Preço / kWh (R$)</MudTh>
+            <MudTh Style="width:180px;">Ocupação / min (R$)</MudTh>
+            <MudTh Style="width:60px;"></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Código">@context.Carregador.Codigo</MudTd>
+            <MudTd DataLabel="Estação">@context.Estacao.Nome</MudTd>
+            <MudTd DataLabel="Tipo">
+                <MudChip T="string" Size="Size.Small" Color="@(context.Carregador.Corrente == TipoCorrente.DC ? Color.Primary : Color.Secondary)" Variant="Variant.Text">@context.Carregador.Corrente</MudChip>
+            </MudTd>
+            <MudTd DataLabel="Status"><StatusCarregadorChip Status="context.Carregador.Status" /></MudTd>
+            <MudTd DataLabel="Preço / kWh (R$)">
+                <MudNumericField T="decimal" @bind-Value="context.PrecoEditado" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" Step="0.05m" Format="N2" />
+            </MudTd>
+            <MudTd DataLabel="Ocupação / min (R$)">
+                <MudNumericField T="decimal" @bind-Value="context.TaxaEditada" Variant="Variant.Outlined" Margin="Margin.Dense" Min="0" Step="0.05m" Format="N2" />
+            </MudTd>
+            <MudTd>
+                <MudTooltip Text="Salvar preço deste carregador">
+                    <MudIconButton Icon="@Icons.Material.Filled.Save" Color="Color.Success" Size="Size.Small" OnClick="@(() => SalvarLinha(context))" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudPaper>
+
+<MudPaper Class="pa-4 coming-soon-panel" Elevation="1">
+    <div class="d-flex align-center mb-2">
+        <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="mr-2" />
+        <MudText Typo="Typo.h6">Preço dinâmico por horário</MudText>
+        <MudChip T="string" Size="Size.Small" Class="ml-2" Color="Color.Default" Variant="Variant.Text">em breve</MudChip>
+    </div>
+    <MudText Typo="Typo.body2" Class="mud-text-secondary">
+        No futuro, o preço por kWh poderá variar automaticamente conforme o horário (ex.: tarifa reduzida na madrugada, tarifa de pico no fim de tarde),
+        seguindo a lógica de bandeira tarifária da distribuidora local.
+    </MudText>
+</MudPaper>
+
+<MudAlert Severity="Severity.Info" Variant="Variant.Text" Class="mt-3" Dense="true" Icon="@Icons.Material.Filled.Info">
+    Precificação por plano e por cliente (ex.: desconto para assinantes do Plano Morador) está planejada para uma versão futura do painel.
+</MudAlert>
+
+@code {
+    private class GrupoPreco
+    {
+        public TipoCorrente Tipo { get; set; }
+        public int Quantidade { get; set; }
+        public decimal PrecoMedio { get; set; }
+        public decimal NovoPreco { get; set; }
+    }
+
+    private class LinhaPreco
+    {
+        public required Estacao Estacao { get; set; }
+        public required Carregador Carregador { get; set; }
+        public decimal PrecoEditado { get; set; }
+        public decimal TaxaEditada { get; set; }
+    }
+
+    private List<GrupoPreco> _grupos = new();
+    private List<LinhaPreco> _linhas = new();
+
+    protected override void OnInitialized()
+    {
+        State.OnChange += HandleChange;
+        Carregar();
+    }
+
+    private void Carregar()
+    {
+        var todos = State.Data.Estacoes.SelectMany(e => e.Carregadores.Select(c => (Estacao: e, Carregador: c))).ToList();
+
+        // Preserva valores em edição (NovoPreco/PrecoEditado/TaxaEditada) entre atualizações em tempo real,
+        // reconstruindo apenas a parte estrutural/derivada — evita "resetar" um campo que o operador está digitando.
+        var gruposExistentes = _grupos.ToDictionary(g => g.Tipo);
+        _grupos = todos.GroupBy(x => x.Carregador.Corrente).Select(g =>
+        {
+            var precoMedio = g.Average(x => x.Carregador.PrecoPorKwh);
+            if (gruposExistentes.TryGetValue(g.Key, out var existente))
+            {
+                existente.Quantidade = g.Count();
+                existente.PrecoMedio = precoMedio;
+                return existente;
+            }
+            return new GrupoPreco { Tipo = g.Key, Quantidade = g.Count(), PrecoMedio = precoMedio, NovoPreco = Math.Round(precoMedio, 2) };
+        }).OrderBy(g => g.Tipo).ToList();
+
+        var linhasExistentes = _linhas.ToDictionary(l => l.Carregador.Id);
+        _linhas = todos.Select(x =>
+        {
+            if (linhasExistentes.TryGetValue(x.Carregador.Id, out var existente))
+                return existente;
+            return new LinhaPreco
+            {
+                Estacao = x.Estacao,
+                Carregador = x.Carregador,
+                PrecoEditado = x.Carregador.PrecoPorKwh,
+                TaxaEditada = x.Carregador.TaxaOcupacaoPorMinuto,
+            };
+        }).ToList();
+    }
+
+    private void HandleChange()
+    {
+        Carregar();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void AplicarPorTipo(GrupoPreco grupo)
+    {
+        foreach (var carregador in State.Data.Estacoes.SelectMany(e => e.Carregadores).Where(c => c.Corrente == grupo.Tipo))
+        {
+            carregador.PrecoPorKwh = grupo.NovoPreco;
+        }
+        State.NotifyStateChanged();
+        Snackbar.Add($"Preço de R$ {grupo.NovoPreco:N2}/kWh aplicado a todos os carregadores {grupo.Tipo}.", Severity.Success);
+    }
+
+    private void SalvarLinha(LinhaPreco linha)
+    {
+        linha.Carregador.PrecoPorKwh = linha.PrecoEditado;
+        linha.Carregador.TaxaOcupacaoPorMinuto = linha.TaxaEditada;
+        State.NotifyStateChanged();
+        Snackbar.Add($"Preço do carregador {linha.Carregador.Codigo} atualizado.", Severity.Success);
+    }
+
+    public void Dispose() => State.OnChange -= HandleChange;
+}

@@ -1,0 +1,36 @@
+<MudPaper Class="pa-4 kpi-card" Style="height:100%;" Elevation="2">
+    <div class="d-flex align-start justify-space-between">
+        <div class="d-flex flex-column">
+            <MudText Typo="Typo.caption" Class="kpi-label">@Title</MudText>
+            <MudText Typo="Typo.h4" Class="kpi-value mt-1">@Value</MudText>
+        </div>
+        <MudAvatar Color="@Color" Variant="Variant.Filled" Size="Size.Medium" Class="kpi-avatar">
+            <MudIcon Icon="@Icon" Size="Size.Small" />
+        </MudAvatar>
+    </div>
+
+    <div class="d-flex align-center mt-3" style="min-height:20px;">
+        @if (!string.IsNullOrEmpty(TrendValue))
+        {
+            <MudIcon Icon="@(TrendUp ? Icons.Material.Filled.ArrowUpward : Icons.Material.Filled.ArrowDownward)"
+                     Size="Size.Small" Color="@(TrendUp ? Color.Success : Color.Error)" Class="mr-1" />
+            <MudText Typo="Typo.caption" Color="@(TrendUp ? Color.Success : Color.Error)" Class="mr-1" Style="font-weight:600;">@TrendValue</MudText>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">@(TrendLabel ?? "vs ontem")</MudText>
+        }
+        else if (!string.IsNullOrEmpty(SubText))
+        {
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">@SubText</MudText>
+        }
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter] public string Icon { get; set; } = MudBlazor.Icons.Material.Filled.Info;
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public string? SubText { get; set; }
+    [Parameter] public string? TrendValue { get; set; }
+    [Parameter] public bool TrendUp { get; set; } = true;
+    [Parameter] public string? TrendLabel { get; set; }
+    [Parameter] public Color Color { get; set; } = Color.Primary;
+}

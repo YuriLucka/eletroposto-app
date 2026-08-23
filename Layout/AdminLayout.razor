@@ -1,12 +1,26 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 
 <MudLayout>
-    <MudAppBar Elevation="1" Color="Color.Dark">
+    <MudAppBar Elevation="3" Color="Color.Dark">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(() => _open = !_open)" />
-        <MudText Typo="Typo.h6" Class="ml-2">Painel Administrativo — Eletroposto Biguaçu</MudText>
+        <MudIcon Icon="@Icons.Material.Filled.EvStation" Color="Color.Primary" Class="ml-2 mr-2" />
+        <div class="ml-1 d-none d-sm-flex flex-column">
+            <MudText Typo="Typo.h6" Class="admin-appbar-title">Painel Administrativo</MudText>
+            <div class="admin-appbar-subtitle">
+                <span class="admin-pulse-dot"></span>
+                <MudText Typo="Typo.caption">Eletroposto Biguaçu &middot; operando normalmente</MudText>
+            </div>
+        </div>
         <MudSpacer />
-        <MudChip T="string" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.Circle">Proprietário</MudChip>
-        <MudButton Variant="Variant.Text" Color="Color.Inherit" Href="/" StartIcon="@Icons.Material.Filled.PhoneIphone">App do cliente</MudButton>
+        <div class="d-none d-md-flex flex-column mr-4" style="text-align:right;">
+            <MudText Typo="Typo.body2" Style="font-weight:600;">@_agora.ToString("HH:mm")</MudText>
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">@_agora.ToString("dd/MM/yyyy")</MudText>
+        </div>
+        <MudTooltip Text="Nível de acesso: Proprietário (acesso total)">
+            <MudChip T="string" Color="Color.Primary" Size="Size.Small" Variant="Variant.Filled" Icon="@Icons.Material.Filled.VerifiedUser" Class="admin-role-chip mr-2">Proprietário</MudChip>
+        </MudTooltip>
+        <MudButton Variant="Variant.Outlined" Color="Color.Inherit" Href="/" StartIcon="@Icons.Material.Filled.PhoneIphone">App do cliente</MudButton>
     </MudAppBar>
 
     <MudDrawer @bind-Open="_open" Elevation="2" Variant="DrawerVariant.Mini" OpenMiniOnHover="true">
@@ -31,4 +45,17 @@
 
 @code {
     private bool _open = true;
+    private DateTime _agora = DateTime.Now;
+    private System.Threading.Timer? _clock;
+
+    protected override void OnInitialized()
+    {
+        _clock = new System.Threading.Timer(_ =>
+        {
+            _agora = DateTime.Now;
+            InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
+    }
+
+    public void Dispose() => _clock?.Dispose();
 }

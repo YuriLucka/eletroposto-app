@@ -1,0 +1,171 @@
+@page "/admin/portao"
+@layout AdminLayout
+@inject AppStateService State
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageHeader Icon="@Icons.Material.Filled.SensorDoor" Title="Controle de Portão"
+            Subtitle="Abertura, fechamento e histórico de acessos de cada eletroposto." />
+
+<MudGrid Class="mb-4">
+    @foreach (var estacao in State.Data.Estacoes)
+    {
+        var bloqueado = _bloqueado.TryGetValue(estacao.Id, out var b) && b;
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="2">
+                <div class="d-flex align-center justify-space-between mb-2">
+                    <MudText Typo="Typo.h6">@estacao.Nome</MudText>
+                    <MudSwitch T="bool" Value="bloqueado" ValueChanged="@(v => AlternarBloqueio(estacao.Id, v))"
+                               Color="Color.Error" Label="Bloquear acesso" LabelPlacement="Placement.Start" />
+                </div>
+
+                @if (bloqueado)
+                {
+                    <MudAlert Severity="Severity.Error" Dense="true" Class="mb-2" Icon="@Icons.Material.Filled.Block">
+                        Acesso bloqueado — portões não podem ser operados remotamente.
+                    </MudAlert>
+                }
+
+                @if (estacao.PortaoAbertoDesde is { } abertoDesde && MinutosAberto(abertoDesde) >= 5)
+                {
+                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2" Icon="@Icons.Material.Filled.Warning">
+                        ⚠️ Portão aberto há @MinutosAberto(abertoDesde) min
+                    </MudAlert>
+                }
+
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudPaper Class="pa-3" Outlined="true">
+                            <MudText Typo="Typo.subtitle2" Class="mb-1">Entrada</MudText>
+                            <PortaoStatusIndicador Status="estacao.StatusPortaoEntrada" />
+                            <div class="d-flex gap-2 mt-2">
+                                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Disabled="@bloqueado"
+                                           OnClick="@(() => Abrir(estacao, true))">Abrir</MudButton>
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default" Disabled="@bloqueado"
+                                           OnClick="@(() => Fechar(estacao, true))">Fechar</MudButton>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudPaper Class="pa-3" Outlined="true">
+                            <MudText Typo="Typo.subtitle2" Class="mb-1">Saída</MudText>
+                            <PortaoStatusIndicador Status="estacao.StatusPortaoSaida" />
+                            <div class="d-flex gap-2 mt-2">
+                                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" Disabled="@bloqueado"
+                                           OnClick="@(() => Abrir(estacao, false))">Abrir</MudButton>
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Default" Disabled="@bloqueado"
+                                           OnClick="@(() => Fechar(estacao, false))">Fechar</MudButton>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+    }
+</MudGrid>
+
+<MudPaper Class="pa-4 mb-4" Elevation="2">
+    <MudText Typo="Typo.h6" Class="mb-2">Liberar acesso temporário</MudText>
+    <MudGrid>
+        <MudItem xs="12" sm="4">
+            <MudTextField @bind-Value="_novoUsuario" Label="Nome do usuário" Variant="Variant.Outlined" Margin="Margin.Dense" />
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudSelect T="string" @bind-Value="_novoPortao" Label="Portão" Variant="Variant.Outlined" Dense="true">
+                <MudSelectItem Value="@("Entrada")">Entrada</MudSelectItem>
+                <MudSelectItem Value="@("Saída")">Saída</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="3">
+            <MudTextField @bind-Value="_novoMotivo" Label="Motivo" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Ex: visita técnica" />
+        </MudItem>
+        <MudItem xs="12" sm="2" Class="d-flex align-center">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="LiberarAcesso">Liberar</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudPaper Class="pa-4" Elevation="2">
+    <MudText Typo="Typo.h6" Class="mb-2">Histórico de acessos</MudText>
+    <MudTable Items="@State.Data.AcessosPortao.OrderByDescending(a => a.DataHora)" Dense="true" Hover="true" Striped="true" Bordered="false">
+        <HeaderContent>
+            <MudTh Style="width:180px;">Data/Hora</MudTh>
+            <MudTh>Usuário</MudTh>
+            <MudTh Style="width:120px;">Portão</MudTh>
+            <MudTh>Motivo</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Data/Hora">@context.DataHora.ToString("dd/MM/yyyy HH:mm")</MudTd>
+            <MudTd DataLabel="Usuário">@context.UsuarioNome</MudTd>
+            <MudTd DataLabel="Portão">
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="@(context.Portao == "Entrada" ? Color.Info : Color.Secondary)"
+                         Icon="@(context.Portao == "Entrada" ? Icons.Material.Filled.Login : Icons.Material.Filled.Logout)">@context.Portao</MudChip>
+            </MudTd>
+            <MudTd DataLabel="Motivo">@context.Motivo</MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>Nenhum acesso registrado.</MudText>
+        </NoRecordsContent>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new[] { 5, 10, 25 }" RowsPerPageString="Linhas por página" InfoFormat="{first_item}-{last_item} de {all_items}" />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private readonly Dictionary<string, bool> _bloqueado = new();
+    private string _novoUsuario = "";
+    private string _novoPortao = "Entrada";
+    private string _novoMotivo = "";
+
+    protected override void OnInitialized()
+    {
+        State.OnChange += HandleChange;
+    }
+
+    private void HandleChange() => InvokeAsync(StateHasChanged);
+
+    private int MinutosAberto(DateTime desde) => (int)(DateTime.Now - desde).TotalMinutes;
+
+    private void AlternarBloqueio(string estacaoId, bool valor)
+    {
+        _bloqueado[estacaoId] = valor;
+        Snackbar.Add(valor ? "Acesso bloqueado para este eletroposto." : "Acesso liberado para este eletroposto.",
+            valor ? Severity.Error : Severity.Success);
+    }
+
+    private async Task Abrir(Estacao estacao, bool entrada)
+    {
+        await State.AbrirPortaoAsync(estacao, entrada);
+    }
+
+    private void Fechar(Estacao estacao, bool entrada)
+    {
+        State.FecharPortao(estacao, entrada);
+    }
+
+    private void LiberarAcesso()
+    {
+        if (string.IsNullOrWhiteSpace(_novoUsuario))
+        {
+            Snackbar.Add("Informe o nome do usuário.", Severity.Warning);
+            return;
+        }
+
+        State.Data.AcessosPortao.Insert(0, new AcessoPortao
+        {
+            Id = $"ap-{Guid.NewGuid().ToString()[..8]}",
+            DataHora = DateTime.Now,
+            UsuarioNome = _novoUsuario,
+            Portao = _novoPortao,
+            Motivo = string.IsNullOrWhiteSpace(_novoMotivo) ? "Acesso temporário liberado pelo operador" : _novoMotivo,
+        });
+        State.NotifyStateChanged();
+        Snackbar.Add("Acesso temporário liberado e registrado no histórico.", Severity.Success);
+        _novoUsuario = "";
+        _novoMotivo = "";
+    }
+
+    public void Dispose() => State.OnChange -= HandleChange;
+}

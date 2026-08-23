@@ -1,0 +1,142 @@
+@page "/admin"
+@layout AdminLayout
+@using ev_charge_prototype.Pages.Admin.Components
+@inject AppStateService State
+@implements IDisposable
+
+<PageHeader Icon="@Icons.Material.Filled.Dashboard" Title="Dashboard"
+            Subtitle="@($"Visão geral das operações de hoje · {DateTime.Today:dd/MM/yyyy}")" />
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="6" md="4" lg="2">
+        <KpiCard Icon="@Icons.Material.Filled.BatteryChargingFull" Title="Sessões (hoje)" Value="@_hoje.Sessoes.ToString()"
+                 Color="Color.Primary" TrendValue="+12%" TrendUp="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="4" lg="2">
+        <KpiCard Icon="@Icons.Material.Filled.Bolt" Title="kWh vendidos" Value="@($"{_hoje.KwhVendidos:N1}")"
+                 Color="Color.Info" TrendValue="+8%" TrendUp="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="4" lg="2">
+        <KpiCard Icon="@Icons.Material.Filled.AttachMoney" Title="Faturamento (hoje)" Value="@($"R$ {_hoje.Faturamento:N2}")"
+                 Color="Color.Success" TrendValue="+15%" TrendUp="true" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="4" lg="2">
+        <KpiCard Icon="@Icons.Material.Filled.EvStation" Title="Carregadores ativos" Value="@($"{_emUso}/{_totalCarregadores}")"
+                 Color="Color.Warning" SubText="em uso / total instalado" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="4" lg="2">
+        <KpiCard Icon="@Icons.Material.Filled.Timer" Title="Tempo médio de recarga" Value="@($"{_tempoMedioMin:N0} min")"
+                 Color="Color.Secondary" TrendValue="-4%" TrendUp="false" TrendLabel="vs média histórica" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="4" lg="2">
+        <KpiCard Icon="@Icons.Material.Filled.TrendingUp" Title="Taxa de utilização" Value="@($"{_taxaUtilizacao:N0}%")"
+                 Color="Color.Tertiary" SubText="carregadores em uso / total" />
+    </MudItem>
+</MudGrid>
+
+<MudGrid>
+    <MudItem xs="12" md="8">
+        <MudPaper Class="pa-4" Elevation="2">
+            <div class="d-flex align-center mb-3">
+                <div class="admin-section-icon mr-3">
+                    <MudIcon Icon="@Icons.Material.Filled.ShowChart" />
+                </div>
+                <div>
+                    <MudText Typo="Typo.h6">Faturamento — últimos 7 dias</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary">Receita bruta diária, em reais</MudText>
+                </div>
+                <MudSpacer />
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Primary" Icon="@Icons.Material.Filled.DateRange">7 dias</MudChip>
+            </div>
+            <MudChart T="double" ChartType="ChartType.Line" ChartSeries="@_series" ChartLabels="@_labels"
+                      ChartOptions="@_chartOptions" Width="100%" Height="330px" />
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4 d-flex flex-column" Style="height:100%;" Elevation="2">
+            <div class="d-flex align-center mb-3">
+                <div class="admin-section-icon mr-3">
+                    <MudIcon Icon="@Icons.Material.Filled.SensorOccupied" />
+                </div>
+                <MudText Typo="Typo.h6">Sessão ativa (app do cliente)</MudText>
+            </div>
+            @if (State.SessaoAtiva is { } sessao)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="mb-3" Icon="@Icons.Material.Filled.BatteryChargingFull">
+                    Carregador <b>@sessao.CarregadorCodigo</b> — @sessao.EstacaoNome
+                </MudAlert>
+                <MudSimpleTable Dense="true" Elevation="0">
+                    <tbody>
+                        <tr><td>Bateria</td><td class="text-right"><b>@sessao.BateriaAtualPercentual.ToString("N0")%</b></td></tr>
+                        <tr><td>Energia adicionada</td><td class="text-right"><b>@sessao.EnergiaAdicionadaKwh.ToString("N2") kWh</b></td></tr>
+                        <tr><td>Potência atual</td><td class="text-right"><b>@sessao.PotenciaAtualKw.ToString("N1") kW</b></td></tr>
+                        <tr><td>Valor acumulado</td><td class="text-right"><b>R$ @sessao.ValorAcumulado.ToString("N2")</b></td></tr>
+                    </tbody>
+                </MudSimpleTable>
+                <MudProgressLinear Color="Color.Info" Value="@sessao.BateriaAtualPercentual" Class="mt-3" Rounded="true" Size="Size.Large">
+                    <MudText Typo="Typo.caption">@sessao.BateriaAtualPercentual.ToString("N0")%</MudText>
+                </MudProgressLinear>
+            }
+            else
+            {
+                <div class="d-flex flex-column align-center justify-center flex-grow-1 py-6">
+                    <MudIcon Icon="@Icons.Material.Filled.PowerOff" Size="Size.Large" Class="mud-text-secondary mb-2" />
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary" Align="Align.Center">Nenhuma sessão de recarga ativa no momento.</MudText>
+                </div>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private List<ChartSeries<double>> _series = new();
+    private string[] _labels = Array.Empty<string>();
+    private int _emUso;
+    private int _totalCarregadores;
+    private double _tempoMedioMin;
+    private double _taxaUtilizacao;
+    private FaturamentoDia _hoje = new();
+
+    private readonly LineChartOptions _chartOptions = new()
+    {
+        YAxisToStringFunc = y => $"R$ {y:N0}",
+        YAxisTicks = 5,
+        LineStrokeWidth = 3,
+        ShowDataMarkers = true,
+        ShowLegend = false,
+        YAxisTitle = "Faturamento (R$)",
+    };
+
+    protected override void OnInitialized()
+    {
+        State.OnChange += HandleChange;
+        Carregar();
+    }
+
+    private void Carregar()
+    {
+        var todosCarregadores = State.Data.Estacoes.SelectMany(e => e.Carregadores).ToList();
+        _totalCarregadores = todosCarregadores.Count;
+        _emUso = todosCarregadores.Count(c => c.Status == StatusCarregador.EmUso);
+        _taxaUtilizacao = _totalCarregadores == 0 ? 0 : (double)_emUso / _totalCarregadores * 100;
+
+        var transacoes = State.Data.Transacoes;
+        _tempoMedioMin = transacoes.Count == 0 ? 0 : transacoes.Average(t => t.DuracaoMinutos);
+
+        _hoje = State.Data.FaturamentoUltimos7Dias.LastOrDefault() ?? new FaturamentoDia();
+
+        _labels = State.Data.FaturamentoUltimos7Dias.Select(f => f.Data.ToString("dd/MM")).ToArray();
+        _series = new List<ChartSeries<double>>
+        {
+            new() { Name = "Faturamento (R$)", Data = State.Data.FaturamentoUltimos7Dias.Select(f => (double)f.Faturamento).ToArray() }
+        };
+    }
+
+    private void HandleChange()
+    {
+        Carregar();
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => State.OnChange -= HandleChange;
+}
