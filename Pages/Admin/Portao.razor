@@ -28,8 +28,8 @@
 
                 @if (estacao.PortaoAbertoDesde is { } abertoDesde && MinutosAberto(abertoDesde) >= 5)
                 {
-                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2" Icon="@Icons.Material.Filled.Warning">
-                        ⚠️ Portão aberto há @MinutosAberto(abertoDesde) min
+                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2" Icon="@Icons.Material.Filled.WarningAmber">
+                        Portão aberto há @MinutosAberto(abertoDesde) min
                     </MudAlert>
                 }
 
