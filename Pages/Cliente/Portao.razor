@@ -1,0 +1,105 @@
+@page "/portao/{estacaoId}"
+@inject AppStateService State
+@implements IDisposable
+
+@if (Estacao is null)
+{
+    <MudAlert Severity="Severity.Warning" Class="mt-4">Eletroposto não encontrado.</MudAlert>
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-1">Estou no eletroposto</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@Estacao.Nome</MudText>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="2">
+        <MudText Typo="Typo.subtitle2" Class="mb-2"><b>Checklist de acesso</b></MudText>
+        @foreach (var item in _checklist)
+        {
+            <MudStack Row Spacing="2" AlignItems="AlignItems.Center" Class="mb-1">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                <MudText Typo="Typo.body2">@item</MudText>
+            </MudStack>
+        }
+    </MudPaper>
+
+    @if (MostrarAviso)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-4" Icon="@Icons.Material.Filled.WarningAmber">
+            ⚠️ Portão permanece aberto — feche ao sair.
+        </MudAlert>
+    }
+
+    <MudPaper Class="pa-4 mb-3" Elevation="2">
+        <MudText Typo="Typo.subtitle2" Class="mb-2"><b>Portão de entrada</b></MudText>
+        <MudChip T="string" Color="@Format.PortaoCor(Estacao.StatusPortaoEntrada)" Icon="@Format.PortaoIcone(Estacao.StatusPortaoEntrada)" Class="mb-2">
+            @Format.PortaoTexto(Estacao.StatusPortaoEntrada)
+        </MudChip>
+        @if (Estacao.StatusPortaoEntrada == StatusPortao.Abrindo)
+        {
+            <MudProgressLinear Color="Color.Warning" Indeterminate="true" Class="mb-3" Rounded="true" Size="Size.Small" />
+        }
+        else if (Estacao.StatusPortaoEntrada == StatusPortao.Aberto)
+        {
+            <MudAlert Severity="Severity.Success" Dense="true" Class="mb-3" Icon="@Icons.Material.Filled.CheckCircle">Acesso liberado!</MudAlert>
+        }
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-3"
+                   StartIcon="@Icons.Material.Filled.MeetingRoom"
+                   Disabled="@(Estacao.StatusPortaoEntrada == StatusPortao.Abrindo)"
+                   OnClick="@(() => Abrir(true))">
+            ABRIR PORTÃO
+        </MudButton>
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth Class="mt-2" StartIcon="@Icons.Material.Filled.QrCodeScanner"
+                   Disabled="@(Estacao.StatusPortaoEntrada == StatusPortao.Abrindo)"
+                   OnClick="@(() => Abrir(true))">
+            Simular leitura de QR Code
+        </MudButton>
+        <MudStack Row Spacing="2" Class="mt-2">
+            <MudButton Variant="Variant.Outlined" FullWidth Disabled="true" StartIcon="@Icons.Material.Filled.Bluetooth">Bluetooth (em breve)</MudButton>
+            <MudButton Variant="Variant.Outlined" FullWidth Disabled="true" StartIcon="@Icons.Material.Filled.Nfc">NFC (em breve)</MudButton>
+        </MudStack>
+    </MudPaper>
+
+    <MudPaper Class="pa-4" Elevation="2">
+        <MudText Typo="Typo.subtitle2" Class="mb-2"><b>Portão de saída</b></MudText>
+        <MudChip T="string" Color="@Format.PortaoCor(Estacao.StatusPortaoSaida)" Icon="@Format.PortaoIcone(Estacao.StatusPortaoSaida)" Class="mb-2">
+            @Format.PortaoTexto(Estacao.StatusPortaoSaida)
+        </MudChip>
+        @if (Estacao.StatusPortaoSaida == StatusPortao.Abrindo)
+        {
+            <MudProgressLinear Color="Color.Warning" Indeterminate="true" Class="mb-3" Rounded="true" Size="Size.Small" />
+        }
+        <MudButton Variant="Variant.Filled" Color="Color.Secondary" FullWidth Size="Size.Large" Class="py-3"
+                   StartIcon="@Icons.Material.Filled.ExitToApp"
+                   Disabled="@(Estacao.StatusPortaoSaida == StatusPortao.Abrindo)"
+                   OnClick="@(() => Abrir(false))">
+            ABRIR PORTÃO DE SAÍDA
+        </MudButton>
+    </MudPaper>
+}
+
+@code {
+    [Parameter] public string EstacaoId { get; set; } = "";
+
+    private readonly string[] _checklist =
+    {
+        "Usuário autenticado",
+        "Reserva válida ou carregador disponível",
+        "Forma de pagamento válida",
+        "Usuário não bloqueado",
+    };
+
+    private Estacao? Estacao => State.Data.Estacoes.FirstOrDefault(e => e.Id == EstacaoId);
+    private bool MostrarAviso => Estacao?.PortaoAbertoDesde is { } d && (DateTime.Now - d).TotalSeconds > 8;
+
+    protected override void OnInitialized() => State.OnChange += Atualizar;
+
+    private void Atualizar() => InvokeAsync(StateHasChanged);
+
+    private async Task Abrir(bool entrada)
+    {
+        if (Estacao is null) return;
+        await State.AbrirPortaoAsync(Estacao, entrada);
+    }
+
+    public void Dispose() => State.OnChange -= Atualizar;
+}

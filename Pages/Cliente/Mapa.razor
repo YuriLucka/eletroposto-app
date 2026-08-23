@@ -1,0 +1,80 @@
+@page "/mapa"
+@inject AppStateService State
+
+<MudText Typo="Typo.h5" Class="mb-1">Encontrar carregador</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">Toque em um pino ou em um cartão abaixo para ver detalhes.</MudText>
+
+<MudPaper Class="mb-4" Elevation="1"
+          Style="position:relative; height:220px; border-radius:16px; overflow:hidden; background-image: radial-gradient(circle, #c9d6df 1.5px, transparent 1.5px); background-size: 18px 18px; background-color:#eef2f5;">
+    @for (var i = 0; i < Estacoes.Count; i++)
+    {
+        var estacao = Estacoes[i];
+        var (x, y) = Pin(i);
+        var indisponivel = EhIndisponivel(estacao);
+        <div style="@($"position:absolute; left:{x}%; top:{y}%; transform:translate(-50%,-100%); text-align:center;")">
+            <MudFab StartIcon="@Icons.Material.Filled.EvStation"
+                    Color="@(indisponivel ? Color.Default : Color.Primary)"
+                    Size="Size.Small"
+                    Disabled="@indisponivel"
+                    Href="@(indisponivel ? null : $"/estacao/{estacao.Id}")" />
+        </div>
+    }
+</MudPaper>
+
+<MudStack Spacing="3">
+    @foreach (var estacao in Estacoes)
+    {
+        var indisponivel = EhIndisponivel(estacao);
+        <MudCard Elevation="2" Style="@(indisponivel ? "opacity:.6;" : "")">
+            <MudCardContent Class="pa-4">
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                    <MudStack Row Spacing="1" AlignItems="AlignItems.Center">
+                        <MudIcon Icon="@Icons.Material.Filled.EvStation" Color="Color.Primary" />
+                        <MudText Typo="Typo.subtitle1"><b>@estacao.Nome</b></MudText>
+                    </MudStack>
+                    @if (indisponivel)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Tertiary">Em breve</MudChip>
+                    }
+                </MudStack>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">
+                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />@estacao.Endereco — @Format.Distancia(estacao.DistanciaMetros)
+                </MudText>
+                <MudStack Row Spacing="1" Class="mt-3" Wrap="Wrap.Wrap">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle">@estacao.Disponiveis/@estacao.Total disponíveis</MudChip>
+                    @foreach (var pot in Potencias(estacao))
+                    {
+                        <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Bolt">@pot</MudChip>
+                    }
+                </MudStack>
+                <MudText Typo="Typo.body2" Class="mt-3">
+                    <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Faixa de preço: <b>@FaixaPreco(estacao)</b>
+                </MudText>
+            </MudCardContent>
+            <MudCardActions Class="px-4 pb-4 pt-0">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Class="py-2" Disabled="@indisponivel" Href="@($"/estacao/{estacao.Id}")">
+                    VER CARREGADORES
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+</MudStack>
+
+@code {
+    private List<Estacao> Estacoes => State.Data.Estacoes;
+
+    private static (double x, double y) Pin(int i) => (18 + i * 37 % 64, 22 + i * 53 % 56);
+
+    private static bool EhIndisponivel(Estacao e) => e.Nome.Contains("em breve", StringComparison.OrdinalIgnoreCase);
+
+    private static IEnumerable<string> Potencias(Estacao e) =>
+        e.Carregadores.Select(c => $"{c.Corrente} {c.PotenciaMaximaKw:0} kW").Distinct();
+
+    private static string FaixaPreco(Estacao e)
+    {
+        if (e.Carregadores.Count == 0) return "—";
+        var min = e.Carregadores.Min(c => c.PrecoPorKwh);
+        var max = e.Carregadores.Max(c => c.PrecoPorKwh);
+        return min == max ? $"{Format.Moeda(min)}/kWh" : $"{Format.Moeda(min)} – {Format.Moeda(max)}/kWh";
+    }
+}

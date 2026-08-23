@@ -1,0 +1,57 @@
+@page "/login"
+@inject NavigationManager Nav
+
+@* Protótipo estático: não há backend de autenticação real. Os campos abaixo já vêm
+   pré-preenchidos com credenciais de demonstração e qualquer envio apenas navega
+   para a Home usando o usuário mock já seedado em MockDataStore. *@
+
+<img src="https://picsum.photos/seed/evlogin/800/320" alt="Carro elétrico carregando"
+     style="width:100%; height:150px; object-fit:cover; border-radius:16px;" class="mb-3" />
+
+<MudPaper Class="pa-4" Elevation="0">
+    <MudText Typo="Typo.h4" Class="mb-1">⚡ Eletroposto</MudText>
+    <MudText Color="Color.Secondary" Class="mb-4">Carregue seu veículo elétrico com praticidade.</MudText>
+
+    <MudTabs Color="Color.Primary">
+        <MudTabPanel Text="Entrar" Icon="@Icons.Material.Filled.Login">
+            <MudForm Class="mt-4">
+                <MudTextField T="string" Label="Telefone ou e-mail" @bind-Value="_loginId"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.PersonOutline"
+                              Required Class="mb-3" />
+                <MudTextField T="string" Label="Senha" InputType="InputType.Password" @bind-Value="_senha"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock"
+                              Required Class="mb-1" />
+                <MudLink OnClick="EsqueciSenha" Style="cursor:pointer;" Class="mb-4 d-inline-block">Esqueci minha senha</MudLink>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large" OnClick="Entrar" Class="mt-2">ENTRAR</MudButton>
+            </MudForm>
+        </MudTabPanel>
+        <MudTabPanel Text="Criar conta" Icon="@Icons.Material.Filled.PersonAdd">
+            <MudForm Class="mt-4">
+                <MudTextField T="string" Label="Nome completo" @bind-Value="_nome"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Badge"
+                              Required Class="mb-3" />
+                <MudTextField T="string" Label="Telefone ou e-mail" @bind-Value="_loginId"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.PersonOutline"
+                              Required Class="mb-3" />
+                <MudTextField T="string" Label="Senha" InputType="InputType.Password" @bind-Value="_senha"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock"
+                              Required Class="mb-3" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large" OnClick="Entrar" Class="mt-2">CRIAR CONTA</MudButton>
+            </MudForm>
+        </MudTabPanel>
+    </MudTabs>
+
+    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-4 d-block text-center">
+        Login de demonstração pré-preenchido — protótipo sem autenticação real.
+    </MudText>
+</MudPaper>
+
+@code {
+    private string _nome = "Yuri Rodrigues";
+    private string _loginId = "yrodrigues@dpinet.com.br";
+    private string _senha = "123456";
+
+    private void Entrar() => Nav.NavigateTo("/");
+
+    private void EsqueciSenha() { /* no-op no protótipo — sem fluxo real de recuperação de senha */ }
+}

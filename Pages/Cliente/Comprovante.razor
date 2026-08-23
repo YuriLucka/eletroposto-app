@@ -1,0 +1,70 @@
+@page "/comprovante/{id}"
+@inject AppStateService State
+@inject ISnackbar Snackbar
+
+@if (Transacao is null)
+{
+    <MudAlert Severity="Severity.Warning" Class="mt-4">Comprovante não encontrado.</MudAlert>
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-1">Comprovante</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@Format.DataHora(Transacao.Data)</MudText>
+
+    <MudCard Elevation="2" Class="mb-4">
+        <MudCardContent Class="pa-4">
+            <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                <MudStack Row Spacing="1" AlignItems="AlignItems.Center">
+                    <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Primary" />
+                    <MudText Typo="Typo.subtitle1"><b>@Transacao.EstacaoNome</b></MudText>
+                </MudStack>
+                <MudChip T="string" Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small">Pago</MudChip>
+            </MudStack>
+
+            <MudStack Spacing="2">
+                <MudStack Row Justify="Justify.SpaceBetween">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary"><MudIcon Icon="@Icons.Material.Filled.EvStation" Size="Size.Small" style="vertical-align:middle;" /> Carregador</MudText>
+                    <MudText Typo="Typo.body1">@Transacao.CarregadorCodigo</MudText>
+                </MudStack>
+                <MudStack Row Justify="Justify.SpaceBetween">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary"><MudIcon Icon="@Icons.Material.Filled.Bolt" Size="Size.Small" style="vertical-align:middle;" /> Energia</MudText>
+                    <MudText Typo="Typo.body1">@Transacao.EnergiaKwh.ToString("0.0") kWh</MudText>
+                </MudStack>
+                <MudStack Row Justify="Justify.SpaceBetween">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary"><MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" style="vertical-align:middle;" /> Duração</MudText>
+                    <MudText Typo="Typo.body1">@Transacao.DuracaoMinutos min</MudText>
+                </MudStack>
+                <MudStack Row Justify="Justify.SpaceBetween">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary"><MudIcon Icon="@Format.FormaPagamentoIcone(Transacao.FormaPagamento)" Size="Size.Small" style="vertical-align:middle;" /> Forma de pagamento</MudText>
+                    <MudText Typo="Typo.body1">@AppStateService.DescreverFormaPagamento(Transacao.FormaPagamento)</MudText>
+                </MudStack>
+                <MudStack Row Justify="Justify.SpaceBetween">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary"><MudIcon Icon="@Icons.Material.Filled.Tag" Size="Size.Small" style="vertical-align:middle;" /> Comprovante</MudText>
+                    <MudText Typo="Typo.body1">@Transacao.ComprovanteId</MudText>
+                </MudStack>
+                <MudDivider Class="my-1" />
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.subtitle1">Valor pago</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary"><b>@Format.Moeda(Transacao.Valor)</b></MudText>
+                </MudStack>
+            </MudStack>
+        </MudCardContent>
+    </MudCard>
+
+    <MudStack Row Spacing="2" Class="mb-3">
+        <MudButton Variant="Variant.Outlined" FullWidth StartIcon="@Icons.Material.Filled.Share" OnClick="EmBreve">Compartilhar</MudButton>
+        <MudButton Variant="Variant.Outlined" FullWidth StartIcon="@Icons.Material.Filled.PictureAsPdf" OnClick="EmBreve">Baixar PDF</MudButton>
+    </MudStack>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-3" StartIcon="@Icons.Material.Filled.History" Href="/historico">
+        VOLTAR AO HISTÓRICO
+    </MudButton>
+}
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+
+    private Transacao? Transacao => State.Data.Transacoes.FirstOrDefault(t => t.Id == Id);
+
+    private void EmBreve() => Snackbar.Add("Em breve.", Severity.Info);
+}

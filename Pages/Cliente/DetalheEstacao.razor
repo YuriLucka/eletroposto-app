@@ -1,0 +1,64 @@
+@page "/estacao/{id}"
+@inject AppStateService State
+
+@if (Estacao is null)
+{
+    <MudAlert Severity="Severity.Warning" Class="mt-4">Eletroposto não encontrado.</MudAlert>
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-1">@Estacao.Nome</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />@Estacao.Endereco — @Estacao.Cidade · @Format.Distancia(Estacao.DistanciaMetros)
+    </MudText>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="2">
+        <MudStack Row Justify="Justify.SpaceBetween">
+            <div>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Portão de entrada</MudText>
+                <div><MudChip T="string" Size="Size.Small" Color="@Format.PortaoCor(Estacao.StatusPortaoEntrada)" Icon="@Format.PortaoIcone(Estacao.StatusPortaoEntrada)">@Format.PortaoTexto(Estacao.StatusPortaoEntrada)</MudChip></div>
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Portão de saída</MudText>
+                <div><MudChip T="string" Size="Size.Small" Color="@Format.PortaoCor(Estacao.StatusPortaoSaida)" Icon="@Format.PortaoIcone(Estacao.StatusPortaoSaida)">@Format.PortaoTexto(Estacao.StatusPortaoSaida)</MudChip></div>
+            </div>
+        </MudStack>
+        <MudButton Class="mt-4 py-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth StartIcon="@Icons.Material.Filled.MeetingRoom" Href="@($"/portao/{Estacao.Id}")">
+            ABRIR PORTÃO
+        </MudButton>
+    </MudPaper>
+
+    <MudText Typo="Typo.subtitle1" Class="mb-2"><b>Carregadores</b></MudText>
+    <MudStack Spacing="3">
+        @foreach (var c in Estacao.Carregadores)
+        {
+            <MudCard Elevation="2">
+                <MudCardContent Class="pa-4">
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudStack Row Spacing="1" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.EvStation" Color="Color.Primary" Size="Size.Small" />
+                            <MudText Typo="Typo.subtitle2"><b>@c.Codigo</b></MudText>
+                        </MudStack>
+                        <StatusCarregadorChip Status="c.Status" />
+                    </MudStack>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Bolt" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />@c.Corrente · @c.PotenciaMaximaKw.ToString("0") kW
+                        &nbsp;·&nbsp;
+                        <MudIcon Icon="@Format.ConectorIcone(c.Conector)" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />@c.Conector
+                        &nbsp;·&nbsp;
+                        <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />@Format.Moeda(c.PrecoPorKwh)/kWh
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions Class="px-4 pb-4 pt-0">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Href="@($"/carregador/{c.Id}")">Ver carregador</MudButton>
+                </MudCardActions>
+            </MudCard>
+        }
+    </MudStack>
+}
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+
+    private Estacao? Estacao => State.Data.Estacoes.FirstOrDefault(e => e.Id == Id);
+}

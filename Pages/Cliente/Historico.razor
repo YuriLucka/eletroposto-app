@@ -1,0 +1,50 @@
+@page "/historico"
+@inject AppStateService State
+
+<MudText Typo="Typo.h5" Class="mb-1">Histórico e pagamentos</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">Suas últimas recargas e transações.</MudText>
+
+@if (!State.Data.Transacoes.Any())
+{
+    <MudAlert Severity="Severity.Info">Nenhuma transação ainda.</MudAlert>
+}
+else
+{
+    <MudStack Spacing="3">
+        @foreach (var t in State.Data.Transacoes)
+        {
+            <MudCard Elevation="2">
+                <MudCardContent Class="pa-4">
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudStack Row Spacing="1" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.EvStation" Color="Color.Primary" Size="Size.Small" />
+                            <MudText Typo="Typo.subtitle2"><b>@t.CarregadorCodigo</b></MudText>
+                        </MudStack>
+                        <MudChip T="string" Size="Size.Small" Color="@(t.Status == StatusPagamento.Aprovado ? Color.Success : t.Status == StatusPagamento.Pendente ? Color.Warning : Color.Error)">
+                            @StatusTexto(t.Status)
+                        </MudChip>
+                    </MudStack>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">@Format.Data(t.Data) · @t.EstacaoNome</MudText>
+                    <MudStack Row Justify="Justify.SpaceBetween" Class="mt-3">
+                        <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.Bolt" Size="Size.Small" style="vertical-align:middle;" /> @t.EnergiaKwh.ToString("0.0") kWh</MudText>
+                        <MudText Typo="Typo.body2"><MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" style="vertical-align:middle;" /> @t.DuracaoMinutos min</MudText>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary"><b>@Format.Moeda(t.Valor)</b></MudText>
+                    </MudStack>
+                </MudCardContent>
+                <MudCardActions Class="px-4 pb-3 pt-0">
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ReceiptLong" Href="@($"/comprovante/{t.Id}")">Ver comprovante</MudButton>
+                </MudCardActions>
+            </MudCard>
+        }
+    </MudStack>
+}
+
+@code {
+    private static string StatusTexto(StatusPagamento s) => s switch
+    {
+        StatusPagamento.Aprovado => "Aprovado",
+        StatusPagamento.Pendente => "Pendente",
+        StatusPagamento.Recusado => "Recusado",
+        _ => s.ToString(),
+    };
+}

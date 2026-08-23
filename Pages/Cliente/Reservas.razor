@@ -1,0 +1,47 @@
+@page "/reservas"
+@inject AppStateService State
+
+<MudText Typo="Typo.h5" Class="mb-1">Minhas reservas</MudText>
+<MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">Acompanhe e gerencie suas reservas de carregador.</MudText>
+
+@if (!MinhasReservas.Any())
+{
+    <MudAlert Severity="Severity.Info">Você ainda não tem reservas.</MudAlert>
+}
+else
+{
+    <MudStack Spacing="3">
+        @foreach (var r in MinhasReservas)
+        {
+            <MudCard Elevation="2">
+                <MudCardContent Class="pa-4">
+                    <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudStack Row Spacing="1" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.EvStation" Color="Color.Primary" Size="Size.Small" />
+                            <MudText Typo="Typo.subtitle1"><b>@r.EstacaoNome</b></MudText>
+                        </MudStack>
+                        <MudChip T="string" Size="Size.Small" Color="@Format.StatusReservaCor(r.Status)">@Format.StatusReservaTexto(r.Status)</MudChip>
+                    </MudStack>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-1">@r.CarregadorCodigo</MudText>
+                    <MudText Typo="Typo.body2" Class="mt-2">
+                        <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />@Format.Data(r.DataHora) às @Format.Hora(r.DataHora) · @r.DuracaoMinutos min
+                    </MudText>
+                </MudCardContent>
+                @if (r.Status == StatusReserva.Confirmada)
+                {
+                    <MudCardActions Class="px-4 pb-3 pt-0">
+                        <MudButton Color="Color.Error" Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Cancel" OnClick="@(() => Cancelar(r))">Cancelar</MudButton>
+                    </MudCardActions>
+                }
+            </MudCard>
+        }
+    </MudStack>
+}
+
+@code {
+    private IEnumerable<Reserva> MinhasReservas => State.Data.Reservas
+        .Where(r => r.ClienteNome == State.Data.UsuarioAtual.Nome)
+        .OrderByDescending(r => r.DataHora);
+
+    private void Cancelar(Reserva r) => r.Status = StatusReserva.Cancelada;
+}

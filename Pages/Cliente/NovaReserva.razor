@@ -1,0 +1,97 @@
+@page "/reserva/{carregadorId}"
+@inject AppStateService State
+
+@if (Carregador is null)
+{
+    <MudAlert Severity="Severity.Warning" Class="mt-4">Carregador não encontrado.</MudAlert>
+}
+else if (_confirmada && _reserva is not null)
+{
+    <MudPaper Class="pa-6 mt-4 text-center" Elevation="2">
+        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Style="font-size:3.5rem;" />
+        <MudText Typo="Typo.h5" Class="mt-3 mb-1"><b>RESERVA CONFIRMADA</b></MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@Estacao?.Nome · @Carregador.Codigo</MudText>
+        <div class="d-flex justify-center mb-3">
+            <QrPlaceholder Seed="@_reserva.CodigoQr" Size="180" />
+        </div>
+        <MudText Typo="Typo.subtitle2" Class="mb-1">Código: <b>@_reserva.CodigoQr</b></MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary">@Format.Data(_reserva.DataHora) às @Format.Hora(_reserva.DataHora) · @_reserva.DuracaoMinutos min</MudText>
+        <MudButton Class="mt-4 py-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth Href="/reservas">VER MINHAS RESERVAS</MudButton>
+    </MudPaper>
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-1">Nova reserva</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">@Estacao?.Nome · @Carregador.Codigo</MudText>
+
+    <MudPaper Class="pa-4 mb-3" Elevation="2">
+        <MudText Typo="Typo.subtitle2" Class="mb-2"><MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Data</MudText>
+        <MudStack Row Spacing="2" Class="mb-4">
+            <MudChip T="string" Color="@(_dataOffset == 0 ? Color.Primary : Color.Default)" OnClick="@(() => _dataOffset = 0)">Hoje</MudChip>
+            <MudChip T="string" Color="@(_dataOffset == 1 ? Color.Primary : Color.Default)" OnClick="@(() => _dataOffset = 1)">Amanhã</MudChip>
+        </MudStack>
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2"><MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Horário</MudText>
+        <MudStack Row Spacing="2" Class="mb-4" Wrap="Wrap.Wrap">
+            @foreach (var h in _horarios)
+            {
+                <MudChip T="string" Color="@(_horaSelecionada == h ? Color.Primary : Color.Default)" OnClick="@(() => _horaSelecionada = h)">@h:00</MudChip>
+            }
+        </MudStack>
+
+        <MudText Typo="Typo.subtitle2" Class="mb-2"><MudIcon Icon="@Icons.Material.Filled.Timelapse" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />Duração</MudText>
+        <MudStack Row Spacing="2">
+            @foreach (var d in _duracoes)
+            {
+                <MudChip T="string" Color="@(_duracaoSelecionada == d ? Color.Primary : Color.Default)" OnClick="@(() => _duracaoSelecionada = d)">@d min</MudChip>
+            }
+        </MudStack>
+    </MudPaper>
+
+    <MudAlert Severity="Severity.Info" Dense="true" Icon="@Icons.Material.Filled.Info" Class="mb-4">
+        Cancelamento gratuito até 15 min antes. Após 15 min de atraso sem check-in, a reserva é cancelada automaticamente (no-show).
+    </MudAlert>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-3" StartIcon="@Icons.Material.Filled.EventAvailable" OnClick="Confirmar">CONFIRMAR RESERVA</MudButton>
+}
+
+@code {
+    [Parameter] public string CarregadorId { get; set; } = "";
+
+    private readonly int[] _horarios = { 14, 16, 18, 20 };
+    private readonly int[] _duracoes = { 30, 60, 90 };
+
+    private int _dataOffset;
+    private int _horaSelecionada = 18;
+    private int _duracaoSelecionada = 30;
+    private bool _confirmada;
+    private Reserva? _reserva;
+
+    private Carregador? Carregador => State.Data.Estacoes.SelectMany(e => e.Carregadores).FirstOrDefault(c => c.Id == CarregadorId);
+    private Estacao? Estacao => State.Data.Estacoes.FirstOrDefault(e => e.Carregadores.Any(c => c.Id == CarregadorId));
+
+    private void Confirmar()
+    {
+        if (Carregador is null || Estacao is null) return;
+
+        var dataHora = DateTime.Today.AddDays(_dataOffset).AddHours(_horaSelecionada);
+        var codigo = $"RSV-{Guid.NewGuid().ToString()[..6].ToUpperInvariant()}";
+
+        _reserva = new Reserva
+        {
+            Id = $"r-{Guid.NewGuid().ToString()[..8]}",
+            ClienteNome = State.Data.UsuarioAtual.Nome,
+            CarregadorId = Carregador.Id,
+            EstacaoNome = Estacao.Nome,
+            CarregadorCodigo = Carregador.Codigo,
+            DataHora = dataHora,
+            DuracaoMinutos = _duracaoSelecionada,
+            Status = StatusReserva.Confirmada,
+            CodigoQr = codigo,
+        };
+
+        State.Data.Reservas.Insert(0, _reserva);
+        State.AddNotificacao("📅", "Reserva confirmada", $"{Estacao.Nome} · {Carregador.Codigo} às {Format.Hora(dataHora)}.");
+        _confirmada = true;
+    }
+}

@@ -1,0 +1,127 @@
+@page "/recarga/{sessionId}"
+@inject AppStateService State
+@inject NavigationManager Nav
+@inject IDialogService DialogService
+@implements IDisposable
+
+@if (State.SessaoAtiva is null)
+{
+    <MudPaper Class="pa-6 mt-8 text-center" Elevation="0">
+        <MudIcon Icon="@Icons.Material.Filled.BatteryUnknown" Style="font-size:3.5rem;" Color="Color.Secondary" />
+        <MudText Typo="Typo.h6" Class="mt-3 mb-1">Nenhuma recarga em andamento</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">Encontre um carregador disponível para iniciar.</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="py-2" StartIcon="@Icons.Material.Filled.Map" Href="/mapa">Encontrar carregador</MudButton>
+    </MudPaper>
+}
+else
+{
+    var s = State.SessaoAtiva!;
+    var cor = CorGauge(s);
+
+    <MudText Typo="Typo.h5" Class="mb-1">Recarregando</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.EvStation" Size="Size.Small" Class="mr-1" style="vertical-align:middle;" />@s.EstacaoNome · @s.CarregadorCodigo
+    </MudText>
+
+    <div class="d-flex justify-center mb-4" style="position:relative;">
+        <MudProgressCircular Color="@cor" Value="@s.BateriaAtualPercentual" Size="Size.Large" StrokeWidth="7"
+                             Style="width:220px;height:220px; transition:all .4s ease;" />
+        <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <MudText Typo="Typo.h2" Style="line-height:1;"><b>@s.BateriaAtualPercentual.ToString("0")<span style="font-size:1.5rem;">%</span></b></MudText>
+            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-1">
+                <MudIcon Icon="@Icons.Material.Filled.Flag" Size="Size.Small" style="vertical-align:middle;" /> limite @s.LimiteCargaPercentual%
+            </MudText>
+        </div>
+    </div>
+
+    <MudGrid Spacing="2" Class="mb-4">
+        <MudItem xs="6">
+            <MudPaper Class="pa-3 text-center" Elevation="1">
+                <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Primary" Size="Size.Small" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">Energia adicionada</MudText>
+                <MudText Typo="Typo.h6">@s.EnergiaAdicionadaKwh.ToString("0.0") kWh</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="6">
+            <MudPaper Class="pa-3 text-center" Elevation="1">
+                <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Primary" Size="Size.Small" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">Potência atual</MudText>
+                <MudText Typo="Typo.h6">@s.PotenciaAtualKw.ToString("0.0") kW</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="6">
+            <MudPaper Class="pa-3 text-center" Elevation="1">
+                <MudIcon Icon="@Icons.Material.Filled.Timer" Color="Color.Primary" Size="Size.Small" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">Tempo conectado</MudText>
+                <MudText Typo="Typo.h6">@TempoConectado</MudText>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="6">
+            <MudPaper Class="pa-3 text-center" Elevation="1">
+                <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Primary" Size="Size.Small" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">Valor acumulado</MudText>
+                <MudText Typo="Typo.h6">@Format.Moeda(s.ValorAcumulado)</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <MudAlert Severity="@(s.BateriaAtualPercentual >= s.LimiteCargaPercentual ? Severity.Success : Severity.Info)" Dense="true" Class="mb-4">
+        @Estimativa(s)
+    </MudAlert>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Error" FullWidth Size="Size.Large" Class="py-3" StartIcon="@Icons.Material.Filled.StopCircle" OnClick="Encerrar">
+        ENCERRAR RECARGA
+    </MudButton>
+}
+
+@code {
+    [Parameter] public string SessionId { get; set; } = "";
+
+    protected override void OnInitialized() => State.OnChange += Atualizar;
+
+    private void Atualizar() => InvokeAsync(StateHasChanged);
+
+    private static Color CorGauge(SessaoRecarga s)
+    {
+        var margem = s.LimiteCargaPercentual - s.BateriaAtualPercentual;
+        if (margem <= 0) return Color.Success;
+        if (margem < 15) return Color.Warning;
+        return Color.Primary;
+    }
+
+    private string TempoConectado
+    {
+        get
+        {
+            if (State.SessaoAtiva is null) return "--";
+            var span = DateTime.Now - State.SessaoAtiva.Inicio;
+            return span.TotalHours >= 1 ? $"{(int)span.TotalHours}h {span.Minutes:00}min" : $"{span.Minutes}min {span.Seconds:00}s";
+        }
+    }
+
+    private string Estimativa(SessaoRecarga s)
+    {
+        var restante = s.LimiteCargaPercentual - s.BateriaAtualPercentual;
+        if (restante <= 0) return $"✅ Limite de {s.LimiteCargaPercentual}% atingido. Você já pode encerrar a recarga.";
+
+        var decorridoMin = Math.Max(0.5, (DateTime.Now - s.Inicio).TotalMinutes);
+        var ganhoPorMin = (s.BateriaAtualPercentual - s.BateriaInicialPercentual) / decorridoMin;
+        if (ganhoPorMin <= 0) return "⏱️ Calculando estimativa...";
+
+        var minutosRestantes = (int)Math.Ceiling(restante / ganhoPorMin);
+        return $"⏱️ +{minutosRestantes} min para atingir {s.LimiteCargaPercentual}%";
+    }
+
+    private async Task Encerrar()
+    {
+        var confirmado = await DialogService.ShowMessageBoxAsync(
+            "Encerrar recarga",
+            "Deseja realmente encerrar a recarga em andamento?",
+            yesText: "Encerrar", cancelText: "Cancelar");
+
+        if (confirmado == true)
+            Nav.NavigateTo("/finalizacao");
+    }
+
+    public void Dispose() => State.OnChange -= Atualizar;
+}

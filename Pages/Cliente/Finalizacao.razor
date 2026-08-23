@@ -1,0 +1,59 @@
+@page "/finalizacao"
+@inject AppStateService State
+@inject NavigationManager Nav
+
+@if (State.SessaoAtiva is null)
+{
+    <MudAlert Severity="Severity.Info" Class="mt-4">Nenhuma recarga ativa para finalizar.</MudAlert>
+    <MudButton Class="mt-4 py-2" Variant="Variant.Filled" Color="Color.Primary" FullWidth Href="/mapa">Encontrar carregador</MudButton>
+}
+else
+{
+    var s = State.SessaoAtiva!;
+
+    <MudText Typo="Typo.h5" Class="mb-1">Finalizar recarga</MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">Deseja realmente finalizar a recarga?</MudText>
+
+    <MudCard Elevation="2" Class="mb-4">
+        <MudCardContent Class="pa-4">
+            <MudText Typo="Typo.subtitle1" Class="mb-3"><b>@s.EstacaoNome · @s.CarregadorCodigo</b></MudText>
+            <MudStack Spacing="2">
+                <MudStack Row Justify="Justify.SpaceBetween">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary"><MudIcon Icon="@Icons.Material.Filled.Bolt" Size="Size.Small" style="vertical-align:middle;" /> Energia consumida</MudText>
+                    <MudText Typo="Typo.body1"><b>@s.EnergiaAdicionadaKwh.ToString("0.0") kWh</b></MudText>
+                </MudStack>
+                <MudStack Row Justify="Justify.SpaceBetween">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary"><MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" style="vertical-align:middle;" /> Tempo de carregamento</MudText>
+                    <MudText Typo="Typo.body1"><b>@Tempo(s)</b></MudText>
+                </MudStack>
+                <MudStack Row Justify="Justify.SpaceBetween">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary"><MudIcon Icon="@Format.FormaPagamentoIcone(s.FormaPagamento)" Size="Size.Small" style="vertical-align:middle;" /> Forma de pagamento</MudText>
+                    <MudText Typo="Typo.body1"><b>@AppStateService.DescreverFormaPagamento(s.FormaPagamento)</b></MudText>
+                </MudStack>
+                <MudDivider Class="my-1" />
+                <MudStack Row Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.subtitle1">Valor total</MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Primary"><b>@Format.Moeda(s.ValorAcumulado)</b></MudText>
+                </MudStack>
+            </MudStack>
+        </MudCardContent>
+    </MudCard>
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth Size="Size.Large" Class="py-3" StartIcon="@Icons.Material.Filled.CheckCircle" OnClick="Confirmar">
+        CONFIRMAR E PAGAR
+    </MudButton>
+}
+
+@code {
+    private static string Tempo(SessaoRecarga s)
+    {
+        var span = DateTime.Now - s.Inicio;
+        return span.TotalHours >= 1 ? $"{(int)span.TotalHours}h {span.Minutes:00}min" : $"{span.Minutes} min";
+    }
+
+    private void Confirmar()
+    {
+        var transacao = State.FinalizarRecarga();
+        Nav.NavigateTo($"/comprovante/{transacao.Id}");
+    }
+}
