@@ -1,0 +1,28 @@
+@* Fake QR code — deterministic checkerboard from the seed string. Visual only, no real encoding. *@
+<svg width="@Size" height="@Size" viewBox="0 0 11 11" style="background:#fff;border-radius:8px;padding:6px;box-shadow:0 2px 8px rgba(0,0,0,.12)">
+    @for (var y = 0; y < 11; y++)
+    {
+        for (var x = 0; x < 11; x++)
+        {
+            if (Pintado(x, y))
+            {
+                <rect x="@x" y="@y" width="1" height="1" fill="#111" />
+            }
+        }
+    }
+    <rect x="0" y="0" width="3" height="3" fill="none" stroke="#111" stroke-width="0.6" />
+    <rect x="8" y="0" width="3" height="3" fill="none" stroke="#111" stroke-width="0.6" />
+    <rect x="0" y="8" width="3" height="3" fill="none" stroke="#111" stroke-width="0.6" />
+</svg>
+
+@code {
+    [Parameter] public string Seed { get; set; } = "EV";
+    [Parameter] public int Size { get; set; } = 160;
+
+    private bool Pintado(int x, int y)
+    {
+        if ((x < 4 && y < 4) || (x > 6 && y < 4) || (x < 4 && y > 6)) return false;
+        var h = (Seed + x + "-" + y).GetHashCode();
+        return (h & 1) == 0;
+    }
+}

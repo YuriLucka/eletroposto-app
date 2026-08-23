@@ -1,0 +1,30 @@
+<MudChip T="string" Size="Size.Small" Class="@CssClass" Icon="@Icone">@Texto</MudChip>
+
+@code {
+    [Parameter] public StatusCarregador Status { get; set; }
+
+    private string Texto => Status switch
+    {
+        StatusCarregador.Disponivel => "Disponível",
+        StatusCarregador.EmUso => "Em uso",
+        StatusCarregador.Manutencao => "Manutenção",
+        StatusCarregador.Indisponivel => "Indisponível",
+        _ => Status.ToString(),
+    };
+
+    private string CssClass => Status switch
+    {
+        StatusCarregador.Disponivel => "status-chip-disponivel",
+        StatusCarregador.EmUso => "status-chip-emuso",
+        StatusCarregador.Manutencao => "status-chip-manutencao",
+        _ => "status-chip-indisponivel",
+    };
+
+    private string Icone => Status switch
+    {
+        StatusCarregador.Disponivel => Icons.Material.Filled.CheckCircle,
+        StatusCarregador.EmUso => Icons.Material.Filled.BatteryChargingFull,
+        StatusCarregador.Manutencao => Icons.Material.Filled.Build,
+        _ => Icons.Material.Filled.Cancel,
+    };
+}

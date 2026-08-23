@@ -1,0 +1,68 @@
+@inherits LayoutComponentBase
+@inject NavigationManager Nav
+@inject AppStateService State
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="phone-page">
+    <div class="phone-shell">
+        <MudAppBar Class="client-appbar" Dense="true" Elevation="0" Color="Color.Primary">
+            @if (PodeVoltar)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" Color="Color.Inherit" OnClick="Voltar" />
+            }
+            <MudText Typo="Typo.subtitle1" Class="ml-1">⚡ Eletroposto Biguaçu</MudText>
+            <MudSpacer />
+            <MudIconButton Icon="@Icons.Material.Filled.NotificationsNone" Color="Color.Inherit" Href="/notificacoes">
+                @if (NaoLidas > 0)
+                {
+                    <MudBadge Content="@NaoLidas" Color="Color.Error" Overlap="true" />
+                }
+            </MudIconButton>
+        </MudAppBar>
+
+        <div class="phone-content">
+            @Body
+        </div>
+
+        <MudPaper Class="phone-bottom-nav" Elevation="4">
+            <MudBottomNavigation Value="@Rota" Color="Color.Primary" Rounded="false" Dense="true">
+                <MudBottomNavigationItem Icon="@Icons.Material.Filled.Home" Value="@("home")" Href="/" />
+                <MudBottomNavigationItem Icon="@Icons.Material.Filled.Map" Value="@("mapa")" Href="/mapa" />
+                <MudBottomNavigationItem Icon="@Icons.Material.Filled.CalendarMonth" Value="@("reservas")" Href="/reservas" />
+                <MudBottomNavigationItem Icon="@Icons.Material.Filled.History" Value="@("historico")" Href="/historico" />
+                <MudBottomNavigationItem Icon="@Icons.Material.Filled.Person" Value="@("perfil")" Href="/perfil" />
+            </MudBottomNavigation>
+        </MudPaper>
+    </div>
+</div>
+
+<div style="position:fixed; bottom:8px; right:8px; z-index:2000;">
+    <MudButton Variant="Variant.Text" Size="Size.Small" Href="/admin" Style="opacity:.35;">Painel Admin →</MudButton>
+</div>
+
+@code {
+    private int NaoLidas => State.Data.Notificacoes.Count(n => !n.Lida);
+    private bool PodeVoltar => Nav.ToBaseRelativePath(Nav.Uri).TrimEnd('/') is not ("" or "mapa" or "reservas" or "historico" or "perfil");
+    private string Rota => Nav.ToBaseRelativePath(Nav.Uri).Split('/')[0] switch
+    {
+        "" => "home",
+        "mapa" => "mapa",
+        "reservas" => "reservas",
+        "historico" => "historico",
+        "perfil" => "perfil",
+        _ => "",
+    };
+
+    protected override void OnInitialized()
+    {
+        State.OnChange += StateHasChangedHandler;
+        Nav.LocationChanged += (_, _) => StateHasChangedHandler();
+    }
+
+    private void StateHasChangedHandler() => InvokeAsync(StateHasChanged);
+
+    private async Task Voltar() => await JS.InvokeVoidAsync("history.back");
+
+    public void Dispose() => State.OnChange -= StateHasChangedHandler;
+}
