@@ -102,14 +102,14 @@ else
     private string Estimativa(SessaoRecarga s)
     {
         var restante = s.LimiteCargaPercentual - s.BateriaAtualPercentual;
-        if (restante <= 0) return $"✅ Limite de {s.LimiteCargaPercentual}% atingido. Você já pode encerrar a recarga.";
+        if (restante <= 0) return $"Limite de {s.LimiteCargaPercentual}% atingido. Você já pode encerrar a recarga.";
 
         var decorridoMin = Math.Max(0.5, (DateTime.Now - s.Inicio).TotalMinutes);
         var ganhoPorMin = (s.BateriaAtualPercentual - s.BateriaInicialPercentual) / decorridoMin;
-        if (ganhoPorMin <= 0) return "⏱️ Calculando estimativa...";
+        if (ganhoPorMin <= 0) return "Calculando estimativa...";
 
         var minutosRestantes = (int)Math.Ceiling(restante / ganhoPorMin);
-        return $"⏱️ +{minutosRestantes} min para atingir {s.LimiteCargaPercentual}%";
+        return $"+{minutosRestantes} min para atingir {s.LimiteCargaPercentual}%";
     }
 
     private async Task Encerrar()

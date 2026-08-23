@@ -33,7 +33,7 @@ else
             @if (Carregador.Status == StatusCarregador.EmUso)
             {
                 <MudAlert Severity="Severity.Warning" Class="mt-4" Icon="@Icons.Material.Filled.BatteryChargingFull">
-                    🔴 EM USO @(Carregador.PrevisaoTerminoUso is { } prev ? $"— previsão de término às {Format.Hora(prev)}" : "")
+                    EM USO @(Carregador.PrevisaoTerminoUso is { } prev ? $"— previsão de término às {Format.Hora(prev)}" : "")
                 </MudAlert>
             }
             else if (Carregador.Status is StatusCarregador.Manutencao or StatusCarregador.Indisponivel)

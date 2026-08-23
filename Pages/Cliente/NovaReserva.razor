@@ -91,7 +91,7 @@ else
         };
 
         State.Data.Reservas.Insert(0, _reserva);
-        State.AddNotificacao("📅", "Reserva confirmada", $"{Estacao.Nome} · {Carregador.Codigo} às {Format.Hora(dataHora)}.");
+        State.AddNotificacao(Icons.Material.Filled.EventAvailable, "Reserva confirmada", $"{Estacao.Nome} · {Carregador.Codigo} às {Format.Hora(dataHora)}.");
         _confirmada = true;
     }
 }

@@ -30,15 +30,19 @@
 <MudGrid Spacing="2" Class="mb-4">
     <MudItem xs="6">
         <MudPaper Class="pa-3" Elevation="1">
-            <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Color="Color.Primary" Size="Size.Small" />
-            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">Saldo carteira</MudText>
+            <MudStack Row Spacing="1" AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Color="Color.Primary" Size="Size.Small" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Saldo carteira</MudText>
+            </MudStack>
             <MudText Typo="Typo.h6">@Format.Moeda(Usuario.SaldoCarteira)</MudText>
         </MudPaper>
     </MudItem>
     <MudItem xs="6">
         <MudPaper Class="pa-3" Elevation="1">
-            <MudIcon Icon="@Icons.Material.Filled.Loyalty" Color="Color.Primary" Size="Size.Small" />
-            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="d-block">Pontos de fidelidade</MudText>
+            <MudStack Row Spacing="1" AlignItems="AlignItems.Center">
+                <MudIcon Icon="@Icons.Material.Filled.Loyalty" Color="Color.Primary" Size="Size.Small" />
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Pontos de fidelidade</MudText>
+            </MudStack>
             <MudText Typo="Typo.h6">@Usuario.PontosFidelidade pts</MudText>
         </MudPaper>
     </MudItem>

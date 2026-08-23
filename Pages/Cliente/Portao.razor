@@ -25,7 +25,7 @@ else
     @if (MostrarAviso)
     {
         <MudAlert Severity="Severity.Warning" Class="mb-4" Icon="@Icons.Material.Filled.WarningAmber">
-            ⚠️ Portão permanece aberto — feche ao sair.
+            Portão permanece aberto — feche ao sair.
         </MudAlert>
     }
 
@@ -53,7 +53,7 @@ else
                    OnClick="@(() => Abrir(true))">
             Simular leitura de QR Code
         </MudButton>
-        <MudStack Row Spacing="2" Class="mt-2">
+        <MudStack Spacing="2" Class="mt-2">
             <MudButton Variant="Variant.Outlined" FullWidth Disabled="true" StartIcon="@Icons.Material.Filled.Bluetooth">Bluetooth (em breve)</MudButton>
             <MudButton Variant="Variant.Outlined" FullWidth Disabled="true" StartIcon="@Icons.Material.Filled.Nfc">NFC (em breve)</MudButton>
         </MudStack>
